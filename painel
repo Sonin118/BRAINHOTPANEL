@@ -1,30 +1,19 @@
--- ===========================================
--- FLEISCHPANEL + ANTI-LAG (COMBINADO - LOCAL)
--- ===========================================
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
--- ============= SERVICES / BASE =============
-local Players            = game:GetService("Players")
-local ReplicatedStorage  = game:GetService("ReplicatedStorage")
-local TweenService       = game:GetService("TweenService")
-local UserInputService   = game:GetService("UserInputService")
-local RunService         = game:GetService("RunService")
-local CollectionService  = game:GetService("CollectionService")
+local UserInputService = game:GetService("UserInputService")
 
-local player    = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
 
--- ============= REMOTE / COMANDOS ===========
-local remote = ReplicatedStorage
-    :WaitForChild("Packages")
-    :WaitForChild("Net")
-    :WaitForChild("RE/AdminPanelService/ExecuteCommand")
-
-local comandos = { "ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket" }
+local comandos = {
+    "ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket",
+}
 
 local function executarComandos(playerName)
     if not playerName or playerName == "" then return end
     task.spawn(function()
-        for _, cmd in ipairs(comandos) do
+        for i,cmd in ipairs(comandos) do
             local nomeConsulta = playerName
             if type(nomeConsulta) == "string" and string.sub(nomeConsulta, 1, 1) == "@" then
                 nomeConsulta = string.sub(nomeConsulta, 2)
@@ -32,39 +21,45 @@ local function executarComandos(playerName)
             local alvo = Players:FindFirstChild(nomeConsulta)
             if alvo then
                 if cmd == "rocket" then
-                    task.wait(3) -- delay antes do rocket
+                    task.wait(3) -- espera 3s só antes do rocket
                 end
                 remote:FireServer(alvo, cmd)
             end
-            task.wait(0.25) -- delay entre comandos
+            task.wait(0.25) -- Reduzido o delay entre comandos
         end
     end)
 end
 
--- ============= UI: FLEISCHPANEL ============
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
 if playerGui:FindFirstChild("CmdUI") then
     playerGui.CmdUI:Destroy()
 end
 
+-- ScreenGui sem propriedades que possam causar blur
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CmdUI"
 screenGui.ResetOnSpawn = false
-screenGui.DisplayOrder = 999
+screenGui.DisplayOrder = 999 -- Garante que o painel apareça por cima
 screenGui.Parent = playerGui
 
+-- Frame principal simples sem gradientes ou efeitos
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 250)
-frame.Position = UDim2.new(1, -220, 0.5, 100)
-frame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+frame.Size = UDim2.new(0, 200, 0, 250) -- Diminuindo a altura da interface -- Diminuindo o tamanho da interface
+frame.Position = UDim2.new(1, -220, 0.5, 100) -- Canto inferior direito, abaixo do botão '3'
+frame.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
 
+-- Cantos arredondados
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 15)
 corner.Parent = frame
 
+-- Borda sutil ao redor do frame
 local frameStroke = Instance.new("UIStroke")
 frameStroke.Thickness = 1
 frameStroke.Color = Color3.fromRGB(70, 70, 100)
@@ -72,10 +67,11 @@ frameStroke.Transparency = 0.3
 frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 frameStroke.Parent = frame
 
+-- Header simples
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 40)
+header.Size = UDim2.new(1, 0, 0, 40) -- Ajustando altura do header
 header.Position = UDim2.new(0, 0, 0, 0)
-header.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+header.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
 header.BorderSizePixel = 0
 header.Parent = frame
 
@@ -83,6 +79,7 @@ local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 15)
 headerCorner.Parent = header
 
+-- Título
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -20, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
@@ -94,18 +91,27 @@ title.TextSize = 18
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = header
 
--- Minimizar com CTRL
+
+
+-- Variável para controlar se a UI está minimizada
 local isMinimized = false
+
+-- Função para minimizar/maximizar
 local function toggleMinimize()
     if isMinimized then
+        -- Maximizar
         frame.Visible = true
+
         isMinimized = false
+
     else
+        -- Minimizar
         frame.Visible = false
         isMinimized = true
     end
 end
 
+-- Detectar tecla CTRL
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
@@ -113,11 +119,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Lista de jogadores
+-- ScrollingFrame simples
 local scrolling = Instance.new("ScrollingFrame")
-scrolling.Size = UDim2.new(1, -20, 1, -60)
-scrolling.Position = UDim2.new(0, 10, 0, 60)
-scrolling.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+scrolling.Size = UDim2.new(1, -20, 1, -60) -- Ajustando tamanho do scrolling frame para nova altura
+scrolling.Position = UDim2.new(0, 10, 0, 60) -- Ajustando posição do scrolling frame
+scrolling.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
 scrolling.BorderSizePixel = 0
 scrolling.ScrollBarThickness = 8
 scrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
@@ -134,6 +140,7 @@ listLayout.Parent = scrolling
 listLayout.Padding = UDim.new(0, 8)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+-- Padding interno
 local padding = Instance.new("UIPadding")
 padding.PaddingTop = UDim.new(0, 8)
 padding.PaddingBottom = UDim.new(0, 8)
@@ -144,7 +151,7 @@ padding.Parent = scrolling
 local function criarBotao(playerObj)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -16, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    btn.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
     btn.Text = ""
     btn.BorderSizePixel = 0
     btn.AutoButtonColor = false
@@ -161,37 +168,61 @@ local function criarBotao(playerObj)
     btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     btnStroke.Parent = btn
 
-    local playerNameLbl = Instance.new("TextLabel")
-    playerNameLbl.Size = UDim2.new(1, -50, 1, 0)
-    playerNameLbl.Position = UDim2.new(0, 10, 0, 0)
-    playerNameLbl.BackgroundTransparency = 1
-    playerNameLbl.Text = playerObj.Name
-    playerNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    playerNameLbl.Font = Enum.Font.GothamBold
-    playerNameLbl.TextSize = 14
-    playerNameLbl.TextXAlignment = Enum.TextXAlignment.Left
-    playerNameLbl.Parent = btn
+    -- Nome do jogador
+    local playerName = Instance.new("TextLabel")
+    playerName.Size = UDim2.new(1, -50, 1, 0)
+    playerName.Position = UDim2.new(0, 10, 0, 0)
+    playerName.BackgroundTransparency = 1
+    playerName.Text = playerObj.Name
+    playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playerName.Font = Enum.Font.GothamBold
+    playerName.TextSize = 14
+    playerName.TextXAlignment = Enum.TextXAlignment.Left
+    playerName.Parent = btn
 
+
+
+    -- Hover suave
     local hoverTween = TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundColor3 = Color3.fromRGB(24, 28, 36) })
     local unhoverTween = TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundColor3 = Color3.fromRGB(14, 17, 22) })
 
-    btn.MouseEnter:Connect(function() hoverTween:Play() end)
-    btn.MouseLeave:Connect(function() unhoverTween:Play() end)
+    btn.MouseEnter:Connect(function()
+        hoverTween:Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        unhoverTween:Play()
+    end)
+
     btn.MouseButton1Click:Connect(function()
         executarComandos(playerObj.Name)
     end)
+
 end
 
 local function atualizarLista()
     for _, child in ipairs(scrolling:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
     end
+
     local jogadores = {}
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player then table.insert(jogadores, p) end
+        if p ~= player then
+            table.insert(jogadores, p)
+        end
     end
-    for _, p in ipairs(jogadores) do criarBotao(p) end
+    
+
+    
+    for _, p in ipairs(jogadores) do
+        criarBotao(p)
+    end
 end
+
+-- Animação de entrada simples
+-- Animação de entrada removida. Posição definida diretamente no frame.
 
 task.spawn(function()
     while screenGui.Parent do
@@ -199,326 +230,5 @@ task.spawn(function()
         task.wait(2)
     end
 end)
+
 atualizarLista()
-
--- ============= ANTI-LAG (INTEGRADO) =============
--- CONFIG
-local ENABLE_STRIP_SKINS   = true
-local ENABLE_NO_WALLS      = true
-local ENABLE_BRAINHOT_ESP  = true
-local BRAINHOT_LIMITE      = 1_000_000
-
-local WALL_KEYWORDS        = {"wall","parede","barrier","invisible","barreira","colisão","block","border","gate","bar","kill","killbrick"}
-local ENABLE_REMOVE_WALLS  = false
-local WALL_SCAN_INTERVAL   = 1.0
-local WALL_TAG             = "NoWallProcessed"
-
--- ESP cores
-local BH_FILL_COLOR        = Color3.fromRGB(255, 0, 0)
-local BH_OUTLINE_COLOR     = Color3.fromRGB(255, 255, 0)
-local BH_FILL_TRANSP       = 0.4
-local BH_OUTLINE_TRANSP    = 0.0
-
--- UTILS
-local function strContainsAny(s, list)
-    s = string.lower(s or "")
-    for _, w in ipairs(list) do
-        if string.find(s, string.lower(w), 1, true) then
-            return true
-        end
-    end
-    return false
-end
-
-local function safeGetHead(char)
-    return char and char:FindFirstChild("Head")
-end
-
-local function getBrainhotValue(ply)
-    local leaderstats = ply:FindFirstChild("leaderstats")
-    local brainhotValue = leaderstats and leaderstats:FindFirstChild("Brainhot")
-    return brainhotValue and brainhotValue.Value or 0
-end
-
--- STRIP SKINS
-local function stripCharacter(character)
-    if not ENABLE_STRIP_SKINS or not character then return end
-    for _, item in pairs(character:GetChildren()) do
-        if item:IsA("Accessory") or item:IsA("Hat") then
-            pcall(function() item:Destroy() end)
-        end
-    end
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("Shirt") or part:IsA("Pants") or part:IsA("ShirtGraphic") then
-            pcall(function() part:Destroy() end)
-        end
-        if part:IsA("CharacterMesh") then pcall(function() part:Destroy() end) end
-        if part:IsA("Decal") or part:IsA("Texture") then pcall(function() part:Destroy() end) end
-        if part:IsA("SpecialMesh") then
-            pcall(function()
-                part.TextureId = ""
-                if part.MeshType == Enum.MeshType.FileMesh then part.MeshId = "" end
-            end)
-        end
-        if part:IsA("MeshPart") then
-            pcall(function()
-                part.TextureID = ""
-                part.Color = Color3.fromRGB(163,162,165)
-                part.Material = Enum.Material.Plastic
-            end)
-        end
-        if part:IsA("SurfaceAppearance") then pcall(function() part:Destroy() end) end
-        if part:IsA("BasePart") then
-            pcall(function()
-                part.Color = Color3.fromRGB(163,162,165)
-                part.Material = Enum.Material.Plastic
-                part.Transparency = 0
-                part.Reflectance = 0
-                part.BrickColor = BrickColor.new("Medium stone grey")
-            end)
-        end
-        if part:IsA("ParticleEmitter") or part:IsA("Fire") or part:IsA("Smoke")
-        or part:IsA("Sparkles") or part:IsA("Light") or part:IsA("PointLight")
-        or part:IsA("SpotLight") or part:IsA("SurfaceLight")
-        or part:IsA("Trail") or part:IsA("Beam") then
-            pcall(function() part:Destroy() end)
-        end
-    end
-    local head = character:FindFirstChild("Head")
-    if head then
-        for _, item in pairs(head:GetChildren()) do
-            if item:IsA("Decal") or string.find(string.lower(item.Name), "face", 1, true) then
-                pcall(function() item:Destroy() end)
-            end
-        end
-        pcall(function()
-            head.Color = Color3.fromRGB(163,162,165)
-            head.Material = Enum.Material.Plastic
-        end)
-    end
-    local bodyColors = character:FindFirstChildOfClass("BodyColors")
-    if bodyColors then
-        pcall(function()
-            local stone = BrickColor.new("Medium stone grey")
-            bodyColors.HeadColor    = stone
-            bodyColors.TorsoColor   = stone
-            bodyColors.LeftArmColor = stone
-            bodyColors.RightArmColor= stone
-            bodyColors.LeftLegColor = stone
-            bodyColors.RightLegColor= stone
-        end)
-    end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        local animator = humanoid:FindFirstChildOfClass("Animator")
-        if animator then
-            for _, track in pairs(animator:GetPlayingAnimationTracks()) do
-                pcall(function()
-                    if not tostring(track.Animation.AnimationId):find("rbxasset") then track:Stop() end
-                end)
-            end
-        end
-        pcall(function()
-            local description = humanoid:FindFirstChildOfClass("HumanoidDescription")
-            if description then description:Destroy() end
-        end)
-    end
-end
-
-local function processPlayer(ply)
-    if ply ~= player then
-        if ply.Character then stripCharacter(ply.Character) end
-        ply.CharacterAdded:Connect(function(character)
-            task.wait(0.5)
-            stripCharacter(character)
-            task.wait(1)
-            stripCharacter(character)
-        end)
-        ply.CharacterAppearanceLoaded:Connect(function(character) stripCharacter(character) end)
-    end
-end
-
-for _, p in ipairs(Players:GetPlayers()) do processPlayer(p) end
-Players.PlayerAdded:Connect(processPlayer)
-
--- NO-WALLS
-local lastWallScan = 0
-
-local function processPartForPerformance(inst)
-    pcall(function()
-        if ENABLE_REMOVE_WALLS then
-            inst:Destroy()
-            return
-        end
-        inst.CanCollide = false
-        inst.CastShadow = false
-        inst.Transparency = 1
-        inst.Material = Enum.Material.Plastic
-        inst.Reflectance = 0
-        if inst.LocalTransparencyModifier ~= nil then
-            inst.LocalTransparencyModifier = 1
-        end
-
-        for _, d in ipairs(inst:GetDescendants()) do
-            if d:IsA("SurfaceAppearance") or d:IsA("Decal") or d:IsA("Texture")
-            or d:IsA("SpecialMesh") or d:IsA("ParticleEmitter") or d:IsA("Trail")
-            or d:IsA("Beam") or d:IsA("PointLight") or d:IsA("SpotLight")
-            or d:IsA("SurfaceLight") or d:IsA("Fire") or d:IsA("Smoke")
-            or d:IsA("Sparkles") then
-                pcall(function() d:Destroy() end)
-            elseif d:IsA("MeshPart") then
-                pcall(function()
-                    d.TextureID = ""
-                    d.MeshId = ""
-                    d.Color = Color3.fromRGB(163,162,165)
-                    d.Material = Enum.Material.Plastic
-                    d.Transparency = 1
-                    d.CastShadow = false
-                end)
-            end
-        end
-
-        for _, c in ipairs(inst:GetChildren()) do
-            if c:IsA("HingeConstraint") or c:IsA("BallSocketConstraint") or c:IsA("RodConstraint")
-            or c:IsA("SpringConstraint") or c:IsA("RopeConstraint") or c:IsA("WeldConstraint")
-            or c:IsA("Motor6D") then
-                pcall(function() c:Destroy() end)
-            end
-        end
-
-        pcall(function() CollectionService:AddTag(inst, WALL_TAG) end)
-    end)
-end
-
-local function softenWalls()
-    if not ENABLE_NO_WALLS then return end
-    if tick() - lastWallScan < WALL_SCAN_INTERVAL then return end
-    lastWallScan = tick()
-
-    for _, inst in ipairs(workspace:GetDescendants()) do
-        if inst:IsA("BasePart") and not CollectionService:HasTag(inst, WALL_TAG) then
-            local n = inst.Name or ""
-            if strContainsAny(n, WALL_KEYWORDS) then
-                processPartForPerformance(inst)
-            end
-        end
-    end
-end
-
--- ESP BRAINHOT
-local function ensureBillboard(head, value)
-    local bb = head:FindFirstChild("BrainhotESP_BB")
-    if not bb then
-        bb = Instance.new("BillboardGui")
-        bb.Name = "BrainhotESP_BB"
-        bb.AlwaysOnTop = true
-        bb.Size = UDim2.new(0, 200, 0, 40)
-        bb.StudsOffset = Vector3.new(0, 2.5, 0)
-        bb.Parent = head
-
-        local label = Instance.new("TextLabel")
-        label.Name = "Text"
-        label.BackgroundTransparency = 1
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.Font = Enum.Font.SourceSansBold
-        label.TextScaled = true
-        label.TextColor3 = Color3.fromRGB(255,255,0)
-        label.TextStrokeTransparency = 0.5
-        label.Parent = bb
-    end
-    local t = bb:FindFirstChild("Text")
-    if t then
-        t.Text = "Brainhot: " .. tostring(value)
-    end
-    return bb
-end
-
-local function ensureHighlight(character)
-    local hl = character:FindFirstChild("BrainhotESP_Highlight")
-    if not hl then
-        hl = Instance.new("Highlight")
-        hl.Name = "BrainhotESP_Highlight"
-        hl.FillColor = BH_FILL_COLOR
-        hl.OutlineColor = BH_OUTLINE_COLOR
-        hl.FillTransparency = BH_FILL_TRANSP
-        hl.OutlineTransparency = BH_OUTLINE_TRANSP
-        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        hl.Parent = character
-    end
-    return hl
-end
-
-local function setupBrainhotESP(ply)
-    if not ENABLE_BRAINHOT_ESP then return end
-    if ply == player then return end
-
-    local function hookChar(char)
-        if not char then return end
-        local head = safeGetHead(char)
-        if head then
-            task.spawn(function()
-                while char.Parent and head.Parent do
-                    local value = getBrainhotValue(ply)
-                    if value >= BRAINHOT_LIMITE then
-                        ensureHighlight(char)
-                        ensureBillboard(head, value)
-                    else
-                        local hl = char:FindFirstChild("BrainhotESP_Highlight")
-                        if hl then pcall(function() hl:Destroy() end) end
-                        local bb = head:FindFirstChild("BrainhotESP_BB")
-                        if bb then pcall(function() bb:Destroy() end) end
-                    end
-                    task.wait(0.2)
-                end
-            end)
-        end
-    end
-
-    if ply.Character then hookChar(ply.Character) end
-    ply.CharacterAdded:Connect(hookChar)
-end
-
-for _, p in ipairs(Players:GetPlayers()) do setupBrainhotESP(p) end
-Players.PlayerAdded:Connect(setupBrainhotESP)
-
--- HEARTBEAT LOOP (usar contador diferente de "frame" da UI!)
-local hbCounter = 0
-RunService.Heartbeat:Connect(function()
-    hbCounter += 1
-    if hbCounter >= 30 then -- ~0.5s
-        hbCounter = 0
-
-        if ENABLE_STRIP_SKINS then
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= player and p.Character then
-                    for _, item in pairs(p.Character:GetChildren()) do
-                        if item:IsA("Accessory") or item:IsA("Hat")
-                        or item:IsA("Shirt") or item:IsA("Pants")
-                        or item:IsA("ShirtGraphic") then
-                            pcall(function() item:Destroy() end)
-                        end
-                    end
-                    for _, part in pairs(p.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            pcall(function() part.Color = Color3.fromRGB(163,162,165) end)
-                        end
-                    end
-                end
-            end
-        end
-
-        if ENABLE_NO_WALLS then
-            softenWalls()
-        end
-    end
-end)
-
-print(("="):rep(52))
-print("✓ SCRIPT ATIVADO (PAINEL + ANTI-LAG)")
-if ENABLE_STRIP_SKINS then print("→ Remoção de skins/roupas/acessórios") end
-if ENABLE_NO_WALLS then
-    print("→ No-Walls ativo. Scan a cada "..tostring(WALL_SCAN_INTERVAL).."s")
-    if ENABLE_REMOVE_WALLS then print("→ Removendo peças identificadas (destrói paredes)") end
-end
-if ENABLE_BRAINHOT_ESP then print("→ ESP Brainhot (limite: "..tostring(BRAINHOT_LIMITE)..")") end
-print(("="):rep(52))
