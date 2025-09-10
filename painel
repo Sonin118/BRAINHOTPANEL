@@ -1,0 +1,187 @@
+--[[
+  Obf-HARD v1 (Luau/Roblox-safe)
+  - Strings escondidas em tabelas numéricas (offset -1)
+  - Nomes minimizados
+  - Encadeamento indireto de serviços e filhos
+  - Sem loadstring / sem dependências externas
+--]]
+
+local _g=game
+local function Q(a) -- decode: char(code-1)
+    local t={} for i=1,#a do t[i]=string.char(a[i]-1) end
+    return table.concat(t)
+end
+
+-- ===== strings decodificadas on-demand =====
+local S={
+    P=Q({81,109,98,122,102,115,116}),                                  -- "Players"
+    RS=Q({83,102,113,109,106,100,98,117,102,101,84,117,112,115,98,104,102}), -- "ReplicatedStorage"
+    TW=Q({85,120,102,102,111,84,102,115,119,106,100,102}),             -- "TweenService"
+    UIX=Q({86,116,102,115,74,111,113,118,117,84,102,115,119,106,100,102}),    -- "UserInputService"
+    PG=Q({81,109,98,122,102,115,72,118,106}),                          -- "PlayerGui"
+    PK=Q({81,98,100,108,98,104,102,116}),                              -- "Packages"
+    NT=Q({79,102,117}),                                                -- "Net"
+    RE=Q({83,70}),                                                     -- "RE"
+    APS=Q({66,101,110,106,111,81,98,111,102,109,84,102,115,119,106,100,102}), -- "AdminPanelService"
+    EXC=Q({70,121,102,100,118,117,102,68,112,110,110,98,111,101}),     -- "ExecuteCommand"
+    CUI=Q({68,110,101,86,74}),                                         -- "CmdUI"
+    SG=Q({84,100,115,102,102,111,72,118,106}),                         -- "ScreenGui"
+    FR=Q({71,115,98,110,102}),                                         -- "Frame"
+    UIC=Q({86,74,68,112,115,111,102,115}),                             -- "UICorner"
+    UIS=Q({86,74,84,117,115,112,108,102}),                             -- "UIStroke"
+    TL=Q({85,102,121,117,77,98,99,102,109}),                           -- "TextLabel"
+    GB=Q({72,112,117,105,98,110,67,112,109,101}),                      -- "GothamBold"
+    TB=Q({85,102,121,117,67,118,117,117,112,111}),                     -- "TextButton"
+    SCF=Q({84,100,115,112,109,109,106,111,104,71,115,98,110,102}),     -- "ScrollingFrame"
+    ULL=Q({86,74,77,106,116,117,77,98,122,112,118,117}),               -- "UIListLayout"
+    UPD=Q({86,74,81,98,101,101,106,111,104}),                          -- "UIPadding"
+    TTL=Q({71,109,102,106,116,100,105,81,98,111,102,109})              -- "FleischPanel"
+}
+
+-- ===== serviços e objetos base =====
+local _S=function(n) return _g:GetService(n) end
+local _P=_S(S.P)                              -- Players
+local _R=_S(S.RS)                             -- ReplicatedStorage
+local _T=_S(S.TW)                             -- TweenService
+local _U=_S(S.UIX)                            -- UserInputService
+local _L=_P.LocalPlayer
+local _G=_L:WaitForChild(S.PG)
+
+-- ===== caminho do Remote (RE/AdminPanelService/ExecuteCommand) =====
+local function W(o,n) return o:WaitForChild(n) end
+local _rem = W(W(W(_R,S.PK),S.NT),S.RE)      -- ReplicatedStorage/Packages/Net/RE
+_rem = W(W(_rem,S.APS),S.EXC)                -- /AdminPanelService/ExecuteCommand
+
+-- ===== comandos =====
+local _cmd = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
+
+-- ===== executor =====
+local function X(targetName)
+    if not targetName or targetName=="" then return end
+    task.spawn(function()
+        for i=1,#_cmd do
+            local c=_cmd[i]
+            local q=targetName
+            if type(q)=="string" and string.sub(q,1,1)=="@" then
+                q=string.sub(q,2)
+            end
+            local t=_P:FindFirstChild(q)
+            if t then
+                if c=="rocket" then task.wait(3) end
+                _rem:FireServer(t,c)
+            end
+            task.wait(0.25)
+        end
+    end)
+end
+
+-- ===== mata UI prévia =====
+local _old=_G:FindFirstChild(S.CUI); if _old then _old:Destroy() end
+
+-- ===== ScreenGui =====
+local _sg=Instance.new(S.SG)   -- "ScreenGui"
+_sg.Name=S.CUI
+_sg.ResetOnSpawn=false
+_sg.DisplayOrder=999
+_sg.Parent=_G
+
+-- ===== Frame raiz =====
+local _f=Instance.new(S.FR)    -- "Frame"
+_f.Size=UDim2.new(0,200,0,250)
+_f.Position=UDim2.new(1,-220,0.5,100)
+_f.BackgroundColor3=Color3.fromRGB(14,17,22)
+_f.BorderSizePixel=0
+_f.Active=true
+_f.Draggable=true
+_f.Parent=_sg
+
+local _fc=Instance.new(S.UIC); _fc.CornerRadius=UDim.new(0,15); _fc.Parent=_f
+local _fs=Instance.new(S.UIS); _fs.Thickness=1; _fs.Color=Color3.fromRGB(70,70,100); _fs.Transparency=.3; _fs.ApplyStrokeMode=Enum.ApplyStrokeMode.Border; _fs.Parent=_f
+
+-- ===== Header =====
+local _h=Instance.new(S.FR); _h.Size=UDim2.new(1,0,0,40); _h.BackgroundColor3=Color3.fromRGB(14,17,22); _h.BorderSizePixel=0; _h.Parent=_f
+local _hc=Instance.new(S.UIC); _hc.CornerRadius=UDim.new(0,15); _hc.Parent=_h
+
+local _tt=Instance.new(S.TL); _tt.Size=UDim2.new(1,-20,1,0); _tt.Position=UDim2.new(0,10,0,0); _tt.BackgroundTransparency=1
+_tt.Text=S.TTL; _tt.TextColor3=Color3.new(1,1,1); _tt.Font=Enum.Font.GothamBold; _tt.TextSize=18; _tt.TextXAlignment=Enum.TextXAlignment.Left; _tt.Parent=_h
+
+-- ===== toggle por CTRL (minimize) =====
+local _min=false
+local function TG() _f.Visible=not _f.Visible; _min=not _min end
+_U.InputBegan:Connect(function(i,gp)
+    if gp then return end
+    local k=i.KeyCode
+    if (k==Enum.KeyCode.LeftControl) or (k==Enum.KeyCode.RightControl) then TG() end
+end)
+
+-- ===== Scrolling de jogadores =====
+local _sc=Instance.new(S.SCF)
+_sc.Size=UDim2.new(1,-20,1,-60)
+_sc.Position=UDim2.new(0,10,0,60)
+_sc.BackgroundColor3=Color3.fromRGB(14,17,22)
+_sc.BorderSizePixel=0
+_sc.ScrollBarThickness=8
+_sc.ScrollBarImageColor3=Color3.fromRGB(100,100,120)
+_sc.CanvasSize=UDim2.new(0,0,0,0)
+_sc.AutomaticCanvasSize=Enum.AutomaticSize.Y
+_sc.Parent=_f
+
+local _scc=Instance.new(S.UIC); _scc.CornerRadius=UDim.new(0,10); _scc.Parent=_sc
+local _ll=Instance.new(S.ULL); _ll.Padding=UDim.new(0,8); _ll.SortOrder=Enum.SortOrder.LayoutOrder; _ll.Parent=_sc
+local _pad=Instance.new(S.UPD); _pad.PaddingTop=UDim.new(0,8); _pad.PaddingBottom=UDim.new(0,8); _pad.PaddingLeft=UDim2.new and UDim2 or UDim -- camuflagem leve
+if _pad.PaddingLeft==UDim then _pad.PaddingLeft=UDim.new(0,8); _pad.PaddingRight=UDim.new(0,8) else _pad.PaddingLeft=UDim.new(0,8); _pad.PaddingRight=UDim.new(0,8) end
+_pad.Parent=_sc
+
+-- ===== botão de jogador =====
+local function MK(p)
+    local b=Instance.new(S.TB) -- TextButton
+    b.Size=UDim2.new(1,-16,0,40)
+    b.BackgroundColor3=Color3.fromRGB(14,17,22)
+    b.Text=""
+    b.BorderSizePixel=0
+    b.AutoButtonColor=false
+    b.Parent=_sc
+
+    local bc=Instance.new(S.UIC); bc.CornerRadius=UDim.new(0,10); bc.Parent=b
+    local bs=Instance.new(S.UIS); bs.Thickness=1; bs.Color=Color3.fromRGB(70,70,100); bs.Transparency=.4; bs.ApplyStrokeMode=Enum.ApplyStrokeMode.Border; bs.Parent=b
+
+    local n=Instance.new(S.TL)
+    n.Size=UDim2.new(1,-50,1,0)
+    n.Position=UDim2.new(0,10,0,0)
+    n.BackgroundTransparency=1
+    n.Text=p.Name
+    n.TextColor3=Color3.new(1,1,1)
+    n.Font=Enum.Font.GothamBold
+    n.TextSize=14
+    n.TextXAlignment=Enum.TextXAlignment.Left
+    n.Parent=b
+
+    local h=_T:Create(b,TweenInfo.new(.15,Enum.EasingStyle.Sine,Enum.EasingDirection.Out),{BackgroundColor3=Color3.fromRGB(24,28,36)})
+    local uh=_T:Create(b,TweenInfo.new(.2,Enum.EasingStyle.Sine,Enum.EasingDirection.Out),{BackgroundColor3=Color3.fromRGB(14,17,22)})
+    b.MouseEnter:Connect(function() h:Play() end)
+    b.MouseLeave:Connect(function() uh:Play() end)
+    b.MouseButton1Click:Connect(function() X(p.Name) end)
+end
+
+-- ===== atualizar lista =====
+local function UP()
+    for _,ch in ipairs(_sc:GetChildren()) do
+        if ch:IsA(Q({85,102,121,117,67,118,117,117,112,111})) then -- "TextButton" decod direta
+            ch:Destroy()
+        end
+    end
+    local L={}
+    for _,pp in ipairs(_P:GetPlayers()) do
+        if pp~=_L then L[#L+1]=pp end
+    end
+    for i=1,#L do MK(L[i]) end
+end
+
+-- loop de refresh
+task.spawn(function()
+    while _sg.Parent do
+        UP()
+        task.wait(2)
+    end
+end)
+UP()
