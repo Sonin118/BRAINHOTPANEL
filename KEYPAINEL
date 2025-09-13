@@ -1,0 +1,71 @@
+--[[ =============== LOADER COM KEY ROTATIVA (2h) ===============
+- Defina a KEY digitada pelo usuário em _G.FLEISH_CONFIG.LOADER_KEY
+- A key válida muda automaticamente a cada 2 horas
+- Fórmula: "FLEISH-" .. SEED .. "-" .. floor(os.time()/7200)
+- Opcional: tolerância aceita a janela anterior (prevWindow)
+=============================================================== ]]
+
+_G.FLEISH_CONFIG = _G.FLEISH_CONFIG or {
+    LOADER_KEY = nil  -- <<< o usuário coloca a key aqui ANTES de rodar este loader
+}
+
+local HttpService = game:GetService("HttpService")
+
+-- === CONFIG ===
+local SEED = "83e9c5de7f527010"  -- sua seed/base (mantenha privada se possível)
+local PANEL_URL = "https://raw.githubusercontent.com/Sonin118/BRAINHOTPANEL/refs/heads/main/paneilnokey.lua"
+local ACCEPT_PREVIOUS_WINDOW = true  -- aceita janela anterior para evitar falhas na troca
+
+-- Gera a key esperada para a janela (2 horas = 7200s)
+local function windowNow()
+    return math.floor(os.time() / 7200)
+end
+
+local function makeKey(win)
+    return ("FLEISH-%s-%d"):format(SEED, win)
+end
+
+local function checkKey(userKey)
+    if type(userKey) ~= "string" then return false end
+    local w = windowNow()
+    if userKey == makeKey(w) then
+        return true
+    end
+    if ACCEPT_PREVIOUS_WINDOW and userKey == makeKey(w - 1) then
+        return true
+    end
+    return false
+end
+
+-- === VALIDAÇÃO ===
+local userKey = _G.FLEISH_CONFIG and _G.FLEISH_CONFIG.LOADER_KEY
+if not userKey then
+    warn("⚠️ Defina _G.FLEISH_CONFIG.LOADER_KEY com a sua key antes de rodar o loader.")
+    return
+end
+
+if not checkKey(userKey) then
+    warn("❌ Key inválida. Peça a key atual (2h) ao dono.")
+    return
+end
+
+print("[FLEISH] ✅ Key válida. Carregando painel...")
+
+-- === CARREGA E EXECUTA O PAINEL ===
+local ok, src = pcall(game.HttpGet, game, PANEL_URL)
+if not ok then
+    warn("[FLEISH] Falha ao baixar o painel: " .. tostring(src))
+    return
+end
+
+local fn, compErr = loadstring(src)
+if not fn then
+    warn("[FLEISH] Erro ao compilar o painel: " .. tostring(compErr))
+    return
+end
+
+-- Executa o painel
+local okRun, runErr = pcall(fn)
+if not okRun then
+    warn("[FLEISH] Erro ao executar o painel: " .. tostring(runErr))
+end
