@@ -13,7 +13,7 @@ local HttpService = game:GetService("HttpService")
 
 -- === CONFIG ===
 local SEED = "83e9c5de7f527010"  -- sua seed/base (mantenha privada se possível)
-local PANEL_URL = "https://raw.githubusercontent.com/Sonin118/BRAINHOTPANEL/refs/heads/main/paneilnokey.lua"
+local PANEL_URL = "https://raw.githubusercontent.com/Sonin118/BRAINHOTPANEL/refs/heads/main/painel.lua"
 local ACCEPT_PREVIOUS_WINDOW = true  -- aceita janela anterior para evitar falhas na troca
 
 -- Gera a key esperada para a janela (2 horas = 7200s)
