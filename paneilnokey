@@ -4,7 +4,7 @@
 
 -- ============ CONFIG =============
 local ENABLE_STRIP_SKINS   = true
-local ENABLE_NO_WALLS      = true
+local ENABLE_NO_WALLS      = false  -- Sistema bugado, desativado
 local ENABLE_WALL_HACK     = true
 local WALL_SCAN_INTERVAL   = 5.0
 local SHOW_FPS_PING        = true
@@ -949,12 +949,13 @@ if ENABLE_BRAINHOT_ESP then print("→ ESP para brainhots especiais ativado (USA
 if ENABLE_ANTI_AURA_LAG then print("→ Anti-lag para auras/efeitos ativado") end
 if ENABLE_STRIP_SKINS then print("→ Remoção otimizada de skins/roupas/acessórios") end
 if ENABLE_ADMIN_PANEL then print("→ Painel de administração ativado (CTRL para abrir/fechar)") end
-if ENABLE_NO_WALLS then
-    print("→ Walls/estruturas processadas. Intervalo: "..WALL_SCAN_INTERVAL.."s")
-    print("→ Transparência: "..(WALL_TRANSPARENCY * 100).."%")
-    print("→ "..(ENABLE_WALL_HACK and "WALL HACK ATIVO" or ENABLE_REMOVE_WALLS and "MODO REMOVER ATIVO" or "Estruturas transparentes (COM COLISÃO)"))
-    print("→ Detecta: walls, barriers, blocks, Side 1/2/3 (PROTEÇÃO: chão/solo/mapa)")
-end
+-- Sistema de walls desativado (bugado)
+-- if ENABLE_NO_WALLS then
+--     print("→ Walls/estruturas processadas. Intervalo: "..WALL_SCAN_INTERVAL.."s")
+--     print("→ Transparência: "..(WALL_TRANSPARENCY * 100).."%")
+--     print("→ "..(ENABLE_WALL_HACK and "WALL HACK ATIVO" or ENABLE_REMOVE_WALLS and "MODO REMOVER ATIVO" or "Estruturas transparentes (COM COLISÃO)"))
+--     print("→ Detecta: walls, barriers, blocks, Side 1/2/3 (PROTEÇÃO: chão/solo/mapa)")
+-- end
 print("→ Sistema de FPS único e correto")
 print("→ Loop otimizado com task.spawn")
 print("→ ESP de brainhots corrigido para detectar em Plots")
