@@ -417,16 +417,16 @@ local comandos = {
     "ragdoll", "balloon", "jail", "morph", "jumpscare", "inverse", "tiny", "rocket",
 }
 
--- Função para executar comandos
+-- Remote (igual ao painel antigo)
+local remote = nil
+pcall(function()
+    remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+end)
+
+-- Função para executar comandos (igual ao painel antigo)
 local function executarComandos(playerName)
     if not ENABLE_ADMIN_PANEL then return end
     if not playerName or playerName == "" then return end
-    
-    local remote = ReplicatedStorage:FindFirstChild("Packages")
-    if not remote then return end
-    remote = remote:FindFirstChild("Net")
-    if not remote then return end
-    remote = remote:FindFirstChild("RE/AdminPanelService/ExecuteCommand")
     if not remote then return end
     
     task.spawn(function()
@@ -440,11 +440,9 @@ local function executarComandos(playerName)
                 if cmd == "rocket" then
                     task.wait(3) -- espera 3s só antes do rocket
                 end
-                pcall(function()
-                    remote:FireServer(alvo, cmd)
-                end)
+                remote:FireServer(alvo, cmd)
             end
-            task.wait(0.25) -- Delay entre comandos
+            task.wait(0.25) -- Reduzido o delay entre comandos
         end
     end)
 end
@@ -660,10 +658,10 @@ local function toggleAdminPanel()
     end
 end
 
--- Detectar tecla para abrir painel
+-- Detectar tecla CTRL (igual ao painel antigo)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.F9 then
+    if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
         toggleAdminPanel()
     end
 end)
@@ -986,7 +984,7 @@ if SHOW_FPS_PING then print("→ Display de FPS/PING ativado (sistema único)") 
 if ENABLE_BRAINHOT_ESP then print("→ ESP para brainhots especiais ativado (USANDO LÓGICA DA CALCULADORA)") end
 if ENABLE_ANTI_AURA_LAG then print("→ Anti-lag para auras/efeitos ativado") end
 if ENABLE_STRIP_SKINS then print("→ Remoção otimizada de skins/roupas/acessórios") end
-if ENABLE_ADMIN_PANEL then print("→ Painel de administração ativado (F9 para abrir)") end
+if ENABLE_ADMIN_PANEL then print("→ Painel de administração ativado (CTRL para abrir/fechar)") end
 if ENABLE_NO_WALLS then
     print("→ Walls/estruturas processadas. Intervalo: "..WALL_SCAN_INTERVAL.."s")
     print("→ Transparência: "..(WALL_TRANSPARENCY * 100).."%")
