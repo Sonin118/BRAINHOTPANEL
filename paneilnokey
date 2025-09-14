@@ -408,29 +408,18 @@ local function scanForBrainhots()
     end
 end
 
--- ============ ADMIN PANEL ============
-local adminPanel = nil
-local isPanelMinimized = false
+-- ============ ADMIN PANEL (VERSÃO ANTIGA EXATA) ============
+local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
 
--- Comandos disponíveis
 local comandos = {
-    "ragdoll", "balloon", "jail", "morph", "jumpscare", "inverse", "tiny", "rocket",
+    "ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket",
 }
 
--- Remote (igual ao painel antigo)
-local remote = nil
-pcall(function()
-    remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
-end)
-
--- Função para executar comandos (igual ao painel antigo)
 local function executarComandos(playerName)
     if not ENABLE_ADMIN_PANEL then return end
     if not playerName or playerName == "" then return end
-    if not remote then return end
-    
     task.spawn(function()
-        for i, cmd in ipairs(comandos) do
+        for i,cmd in ipairs(comandos) do
             local nomeConsulta = playerName
             if type(nomeConsulta) == "string" and string.sub(nomeConsulta, 1, 1) == "@" then
                 nomeConsulta = string.sub(nomeConsulta, 2)
@@ -447,224 +436,199 @@ local function executarComandos(playerName)
     end)
 end
 
--- Função para criar o painel
-local function createAdminPanel()
-    if not ENABLE_ADMIN_PANEL then return end
-    
-    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
-    
-    if playerGui:FindFirstChild("AdminPanelUI") then
-        playerGui.AdminPanelUI:Destroy()
-    end
-    
-    -- ScreenGui principal
-    adminPanel = Instance.new("ScreenGui")
-    adminPanel.Name = "AdminPanelUI"
-    adminPanel.ResetOnSpawn = false
-    adminPanel.DisplayOrder = 999
-    adminPanel.Parent = playerGui
-    
-    -- Frame principal
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 220, 0, 300)
-    frame.Position = UDim2.new(1, -240, 0.5, -150)
-    frame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
-    frame.BorderSizePixel = 0
-    frame.Active = true
-    frame.Draggable = true
-    frame.Parent = adminPanel
-    
-    -- Cantos arredondados
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 15)
-    corner.Parent = frame
-    
-    -- Borda sutil
-    local frameStroke = Instance.new("UIStroke")
-    frameStroke.Thickness = 1
-    frameStroke.Color = Color3.fromRGB(70, 70, 100)
-    frameStroke.Transparency = 0.3
-    frameStroke.Parent = frame
-    
-    -- Header
-    local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 45)
-    header.Position = UDim2.new(0, 0, 0, 0)
-    header.BackgroundColor3 = Color3.fromRGB(20, 25, 32)
-    header.BorderSizePixel = 0
-    header.Parent = frame
-    
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 15)
-    headerCorner.Parent = header
-    
-    -- Título
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -60, 1, 0)
-    title.Position = UDim2.new(0, 15, 0, 0)
-    title.BackgroundTransparency = 1
-    title.Text = "🎮 Admin Panel"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = header
-    
-    -- Botão de fechar/minimizar
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 30, 0, 30)
-    closeBtn.Position = UDim2.new(1, -35, 0.5, -15)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-    closeBtn.Text = "✕"
-    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 14
-    closeBtn.BorderSizePixel = 0
-    closeBtn.Parent = header
-    
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 8)
-    closeCorner.Parent = closeBtn
-    
-    -- ScrollingFrame para lista de jogadores
-    local scrolling = Instance.new("ScrollingFrame")
-    scrolling.Size = UDim2.new(1, -20, 1, -60)
-    scrolling.Position = UDim2.new(0, 10, 0, 55)
-    scrolling.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
-    scrolling.BorderSizePixel = 0
-    scrolling.ScrollBarThickness = 6
-    scrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
-    scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
-    scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    scrolling.Parent = frame
-    
-    local scrollCorner = Instance.new("UICorner")
-    scrollCorner.CornerRadius = UDim.new(0, 10)
-    scrollCorner.Parent = scrolling
-    
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = scrolling
-    listLayout.Padding = UDim.new(0, 6)
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 8)
-    padding.PaddingBottom = UDim.new(0, 8)
-    padding.PaddingLeft = UDim.new(0, 8)
-    padding.PaddingRight = UDim.new(0, 8)
-    padding.Parent = scrolling
-    
-    -- Função para criar botão de jogador
-    local function criarBotaoPlayer(playerObj)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -16, 0, 45)
-        btn.BackgroundColor3 = Color3.fromRGB(18, 22, 28)
-        btn.Text = ""
-        btn.BorderSizePixel = 0
-        btn.AutoButtonColor = false
-        btn.Parent = scrolling
-        
-        local cornerBtn = Instance.new("UICorner")
-        cornerBtn.CornerRadius = UDim.new(0, 8)
-        cornerBtn.Parent = btn
-        
-        local btnStroke = Instance.new("UIStroke")
-        btnStroke.Thickness = 1
-        btnStroke.Color = Color3.fromRGB(60, 60, 80)
-        btnStroke.Transparency = 0.5
-        btnStroke.Parent = btn
-        
-        -- Nome do jogador
-        local playerName = Instance.new("TextLabel")
-        playerName.Size = UDim2.new(1, -10, 1, 0)
-        playerName.Position = UDim2.new(0, 10, 0, 0)
-        playerName.BackgroundTransparency = 1
-        playerName.Text = "🎯 " .. playerObj.Name
-        playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
-        playerName.Font = Enum.Font.Gotham
-        playerName.TextSize = 13
-        playerName.TextXAlignment = Enum.TextXAlignment.Left
-        playerName.Parent = btn
-        
-        -- Efeitos hover
-        local hoverTween = TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
-            BackgroundColor3 = Color3.fromRGB(30, 35, 42),
-            Size = UDim2.new(1, -12, 0, 47)
-        })
-        local unhoverTween = TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
-            BackgroundColor3 = Color3.fromRGB(18, 22, 28),
-            Size = UDim2.new(1, -16, 0, 45)
-        })
-        
-        btn.MouseEnter:Connect(function()
-            hoverTween:Play()
-        end)
-        
-        btn.MouseLeave:Connect(function()
-            unhoverTween:Play()
-        end)
-        
-        btn.MouseButton1Click:Connect(function()
-            executarComandos(playerObj.Name)
-        end)
-    end
-    
-    -- Função para atualizar lista
-    local function atualizarLista()
-        for _, child in ipairs(scrolling:GetChildren()) do
-            if child:IsA("TextButton") then
-                child:Destroy()
-            end
-        end
-        
-        local jogadores = {}
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer then
-                table.insert(jogadores, p)
-            end
-        end
-        
-        for _, p in ipairs(jogadores) do
-            criarBotaoPlayer(p)
-        end
-    end
-    
-    -- Botão de fechar
-    closeBtn.MouseButton1Click:Connect(function()
-        adminPanel:Destroy()
-        adminPanel = nil
-    end)
-    
-    -- Atualizar lista a cada 2 segundos
-    task.spawn(function()
-        while adminPanel and adminPanel.Parent do
-            atualizarLista()
-            task.wait(2)
-        end
-    end)
-    
-    atualizarLista()
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("CmdUI") then
+    playerGui.CmdUI:Destroy()
 end
 
--- Função para toggle do painel
-local function toggleAdminPanel()
-    if not ENABLE_ADMIN_PANEL then return end
-    
-    if adminPanel and adminPanel.Parent then
-        adminPanel:Destroy()
-        adminPanel = nil
+-- ScreenGui sem propriedades que possam causar blur
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CmdUI"
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999 -- Garante que o painel apareça por cima
+screenGui.Parent = playerGui
+
+-- Frame principal simples sem gradientes ou efeitos
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 250) -- Diminuindo a altura da interface -- Diminuindo o tamanho da interface
+frame.Position = UDim2.new(1, -220, 0.5, 100) -- Canto inferior direito, abaixo do botão '3'
+frame.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- Cantos arredondados
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = frame
+
+-- Borda sutil ao redor do frame
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Thickness = 1
+frameStroke.Color = Color3.fromRGB(70, 70, 100)
+frameStroke.Transparency = 0.3
+frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+frameStroke.Parent = frame
+
+-- Header simples
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 40) -- Ajustando altura do header
+header.Position = UDim2.new(0, 0, 0, 0)
+header.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
+header.BorderSizePixel = 0
+header.Parent = frame
+
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0, 15)
+headerCorner.Parent = header
+
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -20, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "FleischPanel"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
+
+-- Variável para controlar se a UI está minimizada
+local isMinimized = false
+
+-- Função para minimizar/maximizar
+local function toggleMinimize()
+    if isMinimized then
+        -- Maximizar
+        frame.Visible = true
+        isMinimized = false
     else
-        createAdminPanel()
+        -- Minimizar
+        frame.Visible = false
+        isMinimized = true
     end
 end
 
--- Detectar tecla CTRL (igual ao painel antigo)
+-- Detectar tecla CTRL
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
-        toggleAdminPanel()
+        toggleMinimize()
     end
 end)
+
+-- ScrollingFrame simples
+local scrolling = Instance.new("ScrollingFrame")
+scrolling.Size = UDim2.new(1, -20, 1, -60) -- Ajustando tamanho do scrolling frame para nova altura
+scrolling.Position = UDim2.new(0, 10, 0, 60) -- Ajustando posição do scrolling frame
+scrolling.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
+scrolling.BorderSizePixel = 0
+scrolling.ScrollBarThickness = 8
+scrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrolling.Parent = frame
+
+local scrollCorner = Instance.new("UICorner")
+scrollCorner.CornerRadius = UDim.new(0, 10)
+scrollCorner.Parent = scrolling
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrolling
+listLayout.Padding = UDim.new(0, 8)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Padding interno
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 8)
+padding.PaddingBottom = UDim.new(0, 8)
+padding.PaddingLeft = UDim.new(0, 8)
+padding.PaddingRight = UDim.new(0, 8)
+padding.Parent = scrolling
+
+local function criarBotao(playerObj)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -16, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(14, 17, 22) -- #0E1116
+    btn.Text = ""
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Parent = scrolling
+
+    local cornerBtn = Instance.new("UICorner")
+    cornerBtn.CornerRadius = UDim.new(0, 10)
+    cornerBtn.Parent = btn
+
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Thickness = 1
+    btnStroke.Color = Color3.fromRGB(70, 70, 100)
+    btnStroke.Transparency = 0.4
+    btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    btnStroke.Parent = btn
+
+    -- Nome do jogador
+    local playerName = Instance.new("TextLabel")
+    playerName.Size = UDim2.new(1, -50, 1, 0)
+    playerName.Position = UDim2.new(0, 10, 0, 0)
+    playerName.BackgroundTransparency = 1
+    playerName.Text = playerObj.Name
+    playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playerName.Font = Enum.Font.GothamBold
+    playerName.TextSize = 14
+    playerName.TextXAlignment = Enum.TextXAlignment.Left
+    playerName.Parent = btn
+
+    -- Hover suave
+    local hoverTween = TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundColor3 = Color3.fromRGB(24, 28, 36) })
+    local unhoverTween = TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundColor3 = Color3.fromRGB(14, 17, 22) })
+
+    btn.MouseEnter:Connect(function()
+        hoverTween:Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        unhoverTween:Play()
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        executarComandos(playerObj.Name)
+    end)
+end
+
+local function atualizarLista()
+    for _, child in ipairs(scrolling:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+
+    local jogadores = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(jogadores, p)
+        end
+    end
+    
+    for _, p in ipairs(jogadores) do
+        criarBotao(p)
+    end
+end
+
+-- Animação de entrada simples
+-- Animação de entrada removida. Posição definida diretamente no frame.
+
+task.spawn(function()
+    while screenGui.Parent do
+        atualizarLista()
+        task.wait(2)
+    end
+end)
+
+atualizarLista()
 
 -- ============ PLAYER ESP ============
 local ENABLE_PLAYER_OUTLINE_ESP = true
