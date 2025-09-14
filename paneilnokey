@@ -1,4 +1,16 @@
--- SCRIPT ANTILAG + PAINEL + NO-WALLS COMBINADO
+-- SCRIPT ANTILAG + PAINEL LIMPO E FUNCIONAL
+-- Baseado no script original, mas sem ofuscação problemática
+
+-- ============ CONFIG =============
+local ENABLE_STRIP_SKINS = true
+local ENABLE_NO_WALLS = false -- Desabilitado por problemas
+local ENABLE_WALL_HACK = false
+local WALL_SCAN_INTERVAL = 5.0
+local SHOW_FPS_PING = true
+local ENABLE_BRAINHOT_ESP = true
+local ENABLE_ANTI_AURA_LAG = true
+
+-- ============ SERVICES ============
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
@@ -10,23 +22,18 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ============ CONFIGURAÇÕES =============
-local SHOW_FPS_PING = true
-local ENABLE_BRAINHOT_ESP = true
-local ENABLE_ANTI_AURA_LAG = true
-local ENABLE_STRIP_SKINS = true
-local ENABLE_NO_WALLS = true -- NOVA FUNCIONALIDADE
+-- ============ WALLS ===============
+local WALL_KEYWORDS = {"wall","parede","barrier","invisible","barreira","colisão","block","border","gate","bar","kill","killbrick"}
+local PROTECTED_KEYWORDS = {"floor","chão","solo","ground","terrain","map","mundo","world","spawn","teleport","portal","platform","plataforma"}
+local ENABLE_REMOVE_WALLS = false
+local WALL_TAG = "NoWallProcessed"
+local WALL_TRANSPARENCY = 0.5
 
--- Variáveis
-local fpsPingGui = nil
-local frameCount = 0
-local lastFpsUpdate = 0
-local currentFps = 0
-local brainhotHighlights = {}
-local lastAuraScan = 0
-local playersProcessados = {} -- Para NO-WALLS
+-- ============ ANTI-AURA CONFIG =============
+local AURA_KEYWORDS = {"aura","effect","efeito","glow","brilho","sparkle","particle","fogo","fire","fumaça","smoke","luz","light","raio","beam","magic","mágica","halo","circle","ring","shockwave","onda"}
+local AURA_TAG = "AntiAuraProcessed"
 
--- Lista de brainhots
+-- ============ BRAINHOT ESP CONFIG =============
 local allowSecretByName = {
     ["La Sahur Combinasion"] = true,
     ["Graipuss Medussi"] = true,
@@ -49,68 +56,41 @@ local allowSecretByName = {
     ["Secret Lucky Block"] = true,
 }
 
--- Comandos do painel
+-- ============ ADMIN PANEL =============
 local ADMIN_COMMANDS = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
 
--- ============ NO-WALLS FUNCTIONS =============
-local function tornarTranslucido(parte)
-    if parte and parte:IsA("BasePart") then
-        pcall(function()
-            parte.Transparency = 0.5
-            parte.CanCollide = true -- Mantém colisão
-        end)
-    end
-end
+-- ============ VARIABLES =============
+local fpsPingGui = nil
+local rainbowOffset = 0
+local frameCount = 0
+local lastFpsUpdate = 0
+local currentFps = 0
+local lastWallScan = 0
+local lastAuraScan = 0
+local AURA_SCAN_INTERVAL = 3.0
+local brainhotHighlights = {}
+local playerHighlights = {}
 
-local function processarBases()
-    if not ENABLE_NO_WALLS then return end
-    
-    local plots = Workspace:FindFirstChild("Plots")
-    if not plots then return end
-    
-    for _, plot in pairs(plots:GetChildren()) do
-        local decorations = plot:FindFirstChild("Decorations")
-        if decorations then
-            -- Processar todos os descendentes
-            for _, descendant in pairs(decorations:GetDescendants()) do
-                if descendant:IsA("BasePart") then
-                    local nome = descendant.Name:lower()
-                    if string.find(nome, "wall") or 
-                       string.find(nome, "side") or
-                       string.find(nome, "structure") or
-                       string.find(nome, "base") or
-                       string.find(nome, "home") or
-                       string.find(nome, "parede") then
-                        tornarTranslucido(descendant)
-                    end
-                end
-            end
+-- ============ UTILS =============
+local function strContainsAny(s, list)
+    s = string.lower(s or "")
+    for _,w in ipairs(list) do
+        if string.find(s, string.lower(w)) then
+            return true
         end
     end
+    return false
 end
 
-local function quandoPlayerEntra(player)
-    if not ENABLE_NO_WALLS then return end
-    if playersProcessados[player.UserId] then return end
-    
-    print("🆕 Player entrou: " .. player.Name)
-    
-    -- Aguardar character
-    if not player.Character then
-        player.CharacterAdded:Wait()
-        task.wait(1)
-    end
-    
-    -- Processar bases quando player entra
-    task.wait(0.5)
-    processarBases()
-    
-    -- Marcar como processado
-    playersProcessados[player.UserId] = true
-    print("✅ Player processado: " .. player.Name)
+local function isProtectedStructure(instance)
+    if not instance or not instance.Name then return false end
+    local name = string.lower(instance.Name)
+    if strContainsAny(name, PROTECTED_KEYWORDS) then return true end
+    if instance:IsA("BasePart") and instance.Size.Magnitude > 500 then return true end
+    return false
 end
 
--- ============ FPS/PING DISPLAY =============
+-- ============ FPS/PING DISPLAY ============
 local function createFpsPingDisplay()
     if not SHOW_FPS_PING then return end
     
@@ -121,9 +101,11 @@ local function createFpsPingDisplay()
     fpsPingGui = Instance.new("ScreenGui")
     fpsPingGui.Name = "FpsPingDisplay"
     fpsPingGui.ResetOnSpawn = false
+    fpsPingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     fpsPingGui.Parent = CoreGui
     
     local frame = Instance.new("Frame")
+    frame.Name = "MainFrame"
     frame.Size = UDim2.new(0, 200, 0, 40)
     frame.Position = UDim2.new(0.5, -100, 0, 10)
     frame.BackgroundTransparency = 0.8
@@ -132,6 +114,7 @@ local function createFpsPingDisplay()
     frame.Parent = fpsPingGui
     
     local fpsLabel = Instance.new("TextLabel")
+    fpsLabel.Name = "FpsLabel"
     fpsLabel.Size = UDim2.new(0.5, 0, 1, 0)
     fpsLabel.Position = UDim2.new(0, 0, 0, 0)
     fpsLabel.BackgroundTransparency = 1
@@ -143,6 +126,7 @@ local function createFpsPingDisplay()
     fpsLabel.Parent = frame
     
     local pingLabel = Instance.new("TextLabel")
+    pingLabel.Name = "PingLabel"
     pingLabel.Size = UDim2.new(0.5, 0, 1, 0)
     pingLabel.Position = UDim2.new(0.5, 0, 0, 0)
     pingLabel.BackgroundTransparency = 1
@@ -154,6 +138,14 @@ local function createFpsPingDisplay()
     pingLabel.Parent = frame
     
     return fpsLabel, pingLabel
+end
+
+local function getRainbowColor(offset)
+    local time = tick() + offset
+    local r = math.sin(time * 1) * 0.5 + 0.5
+    local g = math.sin(time * 1 + 2) * 0.5 + 0.5
+    local b = math.sin(time * 1 + 4) * 0.5 + 0.5
+    return Color3.new(r, g, b)
 end
 
 local function updateFpsCounter()
@@ -171,8 +163,10 @@ end
 local function updateFpsPingDisplay(fpsLabel, pingLabel)
     if not SHOW_FPS_PING or not fpsLabel or not pingLabel then return end
     
+    -- Atualiza FPS
     fpsLabel.Text = "FPS: " .. currentFps
     
+    -- Atualiza PING
     local success, pingValue = pcall(function()
         local stats = StatsService:FindFirstChild("PerformanceStats")
         if stats then
@@ -186,48 +180,106 @@ local function updateFpsPingDisplay(fpsLabel, pingLabel)
     
     pingLabel.Text = "PING: " .. (success and pingValue or "N/A") .. (success and "ms" or "")
     
-    -- Efeito rainbow
-    local time = tick()
-    local r = math.sin(time * 1) * 0.5 + 0.5
-    local g = math.sin(time * 1 + 2) * 0.5 + 0.5
-    local b = math.sin(time * 1 + 4) * 0.5 + 0.5
-    local rainbowColor = Color3.new(r, g, b)
+    -- Aplica efeito rainbow
+    rainbowOffset = rainbowOffset + 0.05
+    local rainbowColor = getRainbowColor(rainbowOffset)
     fpsLabel.TextColor3 = rainbowColor
     pingLabel.TextColor3 = rainbowColor
 end
 
--- ============ ANTI-AURA SYSTEM =============
+-- ============ ANTI-AURA SYSTEM ============
+local function isAuraEffect(instance)
+    if not instance or not instance.Name then return false end
+    
+    local name = string.lower(instance.Name)
+    if strContainsAny(name, AURA_KEYWORDS) then return true end
+    
+    local success, result = pcall(function()
+        return instance:IsA("ParticleEmitter") or 
+               instance:IsA("Fire") or 
+               instance:IsA("Smoke") or 
+               instance:IsA("Sparkles") or 
+               instance:IsA("Beam") or 
+               instance:IsA("Trail")
+    end)
+    
+    return success and result or false
+end
+
 local function removeAuraEffects()
     if not ENABLE_ANTI_AURA_LAG then return end
-    if tick() - lastAuraScan < 3.0 then return end
+    if tick() - lastAuraScan < AURA_SCAN_INTERVAL then return end
     
     lastAuraScan = tick()
     
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player and player.Character then
-            for _, descendant in ipairs(player.Character:GetDescendants()) do
-                if descendant and not CollectionService:HasTag(descendant, "AntiAuraProcessed") then
-                    if descendant:IsA("ParticleEmitter") or descendant:IsA("Fire") or descendant:IsA("Smoke") or descendant:IsA("Sparkles") then
+    -- Remove de players
+    pcall(function()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player and player.Character then
+                for _, descendant in ipairs(player.Character:GetDescendants()) do
+                    if descendant and not CollectionService:HasTag(descendant, AURA_TAG) and isAuraEffect(descendant) then
                         pcall(function()
-                            if descendant.Enabled ~= nil then
-                                descendant.Enabled = false
-                            end
-                            task.spawn(function()
-                                task.wait(0.1)
-                                pcall(function()
-                                    descendant:Destroy()
-                                end)
+                            local success, isEffect = pcall(function()
+                                return descendant:IsA("ParticleEmitter") or 
+                                       descendant:IsA("Fire") or 
+                                       descendant:IsA("Smoke") or 
+                                       descendant:IsA("Sparkles") or 
+                                       descendant:IsA("Beam") or 
+                                       descendant:IsA("Trail")
                             end)
+                            
+                            if success and isEffect then
+                                if descendant.Enabled ~= nil then
+                                    descendant.Enabled = false
+                                end
+                                task.spawn(function()
+                                    task.wait(0.1)
+                                    pcall(function()
+                                        descendant:Destroy()
+                                    end)
+                                end)
+                            end
+                            CollectionService:AddTag(descendant, AURA_TAG)
                         end)
-                        CollectionService:AddTag(descendant, "AntiAuraProcessed")
                     end
                 end
             end
         end
-    end
+    end)
+    
+    -- Remove do workspace
+    pcall(function()
+        for _, descendant in ipairs(Workspace:GetDescendants()) do
+            if descendant and not CollectionService:HasTag(descendant, AURA_TAG) and isAuraEffect(descendant) then
+                pcall(function()
+                    local success, isEffect = pcall(function()
+                        return descendant:IsA("ParticleEmitter") or 
+                               descendant:IsA("Fire") or 
+                               descendant:IsA("Smoke") or 
+                               descendant:IsA("Sparkles") or 
+                               descendant:IsA("Beam") or 
+                               descendant:IsA("Trail")
+                    end)
+                    
+                    if success and isEffect then
+                        if descendant.Enabled ~= nil then
+                            descendant.Enabled = false
+                        end
+                        task.spawn(function()
+                            task.wait(0.1)
+                            pcall(function()
+                                descendant:Destroy()
+                            end)
+                        end)
+                    end
+                    CollectionService:AddTag(descendant, AURA_TAG)
+                end)
+            end
+        end
+    end)
 end
 
--- ============ BRAINHOT ESP =============
+-- ============ BRAINHOT ESP ============
 local function createBrainhotHighlight(part, ownerName)
     if not part or not part:IsA("BasePart") then return end
     
@@ -248,6 +300,7 @@ local function createBrainhotHighlight(part, ownerName)
     billboard.Parent = part
     
     local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
     nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
     nameLabel.Position = UDim2.new(0, 0, 0, 0)
     nameLabel.BackgroundTransparency = 1
@@ -260,6 +313,7 @@ local function createBrainhotHighlight(part, ownerName)
     nameLabel.Parent = billboard
     
     local ownerLabel = Instance.new("TextLabel")
+    ownerLabel.Name = "OwnerLabel"
     ownerLabel.Size = UDim2.new(1, 0, 0.5, 0)
     ownerLabel.Position = UDim2.new(0, 0, 0.5, 0)
     ownerLabel.BackgroundTransparency = 1
@@ -321,7 +375,7 @@ local function scanForBrainhots()
         end
     end
     
-    -- Limpa highlights inválidos
+    -- Limpa highlights que não são mais válidos
     for animalOverhead, highlight in pairs(brainhotHighlights) do
         if not animalOverhead.Parent then
             highlight:Destroy()
@@ -337,7 +391,7 @@ local function scanForBrainhots()
     end
 end
 
--- ============ ADMIN PANEL =============
+-- ============ ADMIN PANEL ============
 local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
 
 local function executarComandos(playerName)
@@ -362,6 +416,7 @@ local function executarComandos(playerName)
     end)
 end
 
+-- Interface do painel
 local function createAdminPanel()
     local playerGui = LocalPlayer:WaitForChild("PlayerGui")
     
@@ -544,7 +599,7 @@ local function createAdminPanel()
     updatePlayerList()
 end
 
--- ============ STRIP SKINS =============
+-- ============ STRIP SKINS ============
 local function stripCharacter(character)
     if not ENABLE_STRIP_SKINS or not character then return end
     
@@ -567,26 +622,18 @@ local function stripCharacter(character)
     end
 end
 
--- ============ INICIALIZAÇÃO =============
+-- ============ INITIALIZATION ============
 local fpsLabel, pingLabel = nil, nil
 if SHOW_FPS_PING then
     fpsLabel, pingLabel = createFpsPingDisplay()
     lastFpsUpdate = tick()
 end
 
--- Processar players iniciais para NO-WALLS
-if ENABLE_NO_WALLS then
-    for _, player in pairs(Players:GetPlayers()) do
-        quandoPlayerEntra(player)
-    end
-end
-
--- ============ MAIN LOOP =============
+-- ============ MAIN LOOP ============
 local frameCounter = 0
 local auraCounter = 0
 local brainhotCounter = 0
 local stripCounter = 0
-local nowallsCounter = 0
 
 RunService.Heartbeat:Connect(function(deltaTime)
     -- FPS Counter
@@ -598,7 +645,6 @@ RunService.Heartbeat:Connect(function(deltaTime)
     auraCounter = auraCounter + 1
     brainhotCounter = brainhotCounter + 1
     stripCounter = stripCounter + 1
-    nowallsCounter = nowallsCounter + 1
     
     -- Anti-Aura (a cada 30 frames)
     if auraCounter >= 30 then
@@ -628,43 +674,37 @@ RunService.Heartbeat:Connect(function(deltaTime)
             end
         end)
     end
-    
-    -- NO-WALLS (a cada 300 frames = ~5 segundos)
-    if ENABLE_NO_WALLS and nowallsCounter >= 300 then
-        nowallsCounter = 0
-        task.spawn(processarBases)
-    end
 end)
 
--- ============ PLAYER EVENTS =============
+-- ============ PLAYER EVENTS ============
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        -- Setup ESP if needed
+    end
+end
+
 Players.PlayerAdded:Connect(function(player)
-    -- NO-WALLS: Processar quando player entra
-    if ENABLE_NO_WALLS then
-        task.spawn(function()
-            quandoPlayerEntra(player)
-        end)
+    if player ~= LocalPlayer then
+        -- Setup ESP if needed
     end
 end)
 
 Players.PlayerRemoving:Connect(function(player)
-    -- Cleanup
-    if playersProcessados[player.UserId] then
-        playersProcessados[player.UserId] = nil
+    if playerHighlights[player] then
+        playerHighlights[player]:Destroy()
+        playerHighlights[player] = nil
     end
 end)
 
--- ============ DELAYED INITIALIZATION =============
+-- ============ DELAYED INITIALIZATION ============
 task.delay(1, scanForBrainhots)
 task.delay(1, createAdminPanel)
-if ENABLE_NO_WALLS then
-    task.delay(2, processarBases)
-end
 
--- ============ STARTUP MESSAGE =============
-print(("="):rep(60))
-print("✓ SCRIPT ANTILAG + ADMIN PANEL + NO-WALLS COMBINADO ATIVADO")
+-- ============ STARTUP MESSAGE ============
+print(("="):rep(52))
+print("✓ SCRIPT ANTILAG + ADMIN PANEL ATIVADO")
 print("→ Display de FPS/PING ativado (sistema único)")
-print("→ ESP para brainhots especiais ativado")
+print("→ ESP para brainhots especiais ativado (USANDO LÓGICA DA CALCULADORA)")
 print("→ Anti-lag para auras/efeitos ativado")
 print("→ Remoção otimizada de skins/roupas/acessórios")
 print("→ Painel de administração ativado (CTRL para abrir/fechar)")
@@ -673,7 +713,4 @@ print("→ Loop otimizado com task.spawn")
 print("→ ESP de brainhots corrigido para detectar em Plots")
 print("→ Mostra nome do brainhot e dono")
 print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
-print("→ NO-WALLS: Paredes translúcidas quando player entra")
-print("→ NO-WALLS: Processamento contínuo das bases")
-print("→ NO-WALLS: Detecta novos players automaticamente")
-print(("="):rep(60))
+print(("="):rep(52))
