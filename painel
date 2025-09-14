@@ -1,1 +1,59 @@
-local pastebinURL = "https://pastebin.com/raw/Ywt2xqrk"
+-- Loader BrainHot Panel (GitHub)
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/Sonin118/BRAINHOTPANEL/main/painel"))()
+
+local function loadRealScript()
+    -- URL do script real no Pastebin (Unlisted)
+    local pastebinURL = "https://pastebin.com/raw/Ywt2xqrk"
+    
+    -- Adiciona cache buster para evitar problemas
+    local urlWithCache = pastebinURL .. "?v=" .. math.random(1, 1000000)
+    
+    print("[[ BrainHot Panel - Carregando... ]]")
+    print("📦 Fonte: Pastebin (Unlisted)")
+    
+    -- Tenta carregar o script real
+    local success, err = pcall(function()
+        local scriptCode = game:HttpGet(urlWithCache, true)
+        
+        if scriptCode and #scriptCode > 100 then
+            local realScript = loadstring(scriptCode)
+            if realScript then
+                realScript()
+                print("✅ Script carregado com sucesso!")
+            else
+                error("❌ Falha ao compilar o script")
+            end
+        else
+            error("❌ Script não encontrado ou vazio")
+        end
+    end)
+    
+    if not success then
+        warn("Erro ao carregar: ", err)
+        -- Fallback: Tenta carregar direto do GitHub se o Pastebin falhar
+        local githubURL = "https://raw.githubusercontent.com/Sonin118/BRAINHOTPANEL/main/paneilnokey?v=" .. math.random(1,10000)
+        local githubSuccess, githubErr = pcall(function()
+            local githubCode = game:HttpGet(githubURL, true)
+            if githubCode and #githubCode > 100 then
+                local githubScript = loadstring(githubCode)
+                if githubScript then
+                    githubScript()
+                    print("✅ Script carregado via GitHub (fallback)")
+                end
+            end
+        end)
+        
+        if not githubSuccess then
+            warn("Erro no fallback: ", githubErr)
+        end
+    end
+end
+
+-- Verificação de segurança
+if game:GetService("RunService"):IsRunning() then
+    -- Executa o loader com pequeno delay para garantir carregamento
+    task.wait(1)
+    loadRealScript()
+else
+    print("🛑 Ambiente não suportado")
+end
