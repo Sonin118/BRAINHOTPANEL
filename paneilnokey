@@ -1,2 +1,679 @@
--- SCRIPT ANTILAG + PAINEL OFUSCADO
-local _0x1a2b={[1]="game",[2]="GetService",[3]="Players",[4]="RunService",[5]="CollectionService",[6]="Stats",[7]="CoreGui",[8]="Workspace",[9]="TweenService",[10]="UserInputService",[11]="ReplicatedStorage"}local _0x3c4d=_0x1a2b[1]local _0x5e6f=loadstring("return ".._0x3c4d)()local _0x7890=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[3])local _0x9abc=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[4])local _0xbcde=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[5])local _0xdef0=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[6])local _0x1234=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[7])local _0x5678=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[8])local _0x9012=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[9])local _0x3456=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[10])local _0x789a=_0x5e6f[_0x1a2b[2]](_0x5e6f,_0x1a2b[11])local _0xbcde2=_0x7890.LocalPlayer;local _0xdef0={[1]="wall",[2]="parede",[3]="barrier",[4]="invisible",[5]="barreira",[6]="block",[7]="border",[8]="gate",[9]="bar",[10]="kill",[11]="killbrick",[12]="side"}local _0x1234={[1]="floor",[2]="chão",[3]="solo",[4]="ground",[5]="terrain",[6]="map",[7]="mundo",[8]="world",[9]="spawn",[10]="teleport",[11]="portal",[12]="platform",[13]="plataforma"}local _0x5678={[1]="aura",[2]="effect",[3]="efeito",[4]="glow",[5]="brilho",[6]="sparkle",[7]="particle",[8]="fogo",[9]="fire",[10]="fumaça",[11]="smoke",[12]="luz",[13]="light",[14]="raio",[15]="beam",[16]="magic",[17]="mágica",[18]="halo",[19]="circle",[20]="ring",[21]="shockwave",[22]="onda"}local _0x9012={["La Sahur Combinasion"]=true,["Graipuss Medussi"]=true,["Pot Hotspot"]=true,["Chicleteira Bicicleteira"]=true,["La Grande Combinasion"]=true,["Los Combinasionas"]=true,["Nuclearo Dinossauro"]=true,["La Karkerkar Combinasion"]=true,["Los Hotspotsitos"]=true,["Tralaledon"]=true,["Esok Sekolah"]=true,["Ketupat Kepat"]=true,["Los Bros"]=true,["La Supreme Combinasion"]=true,["Ketchuru and Musturu"]=true,["Garama and Madundung"]=true,["Spaghetti Tualetti"]=true,["Dragon Cannelloni"]=true,["Secret Lucky Block"]=true}local _0x3456={[1]="ragdoll",[2]="balloon",[3]="jail",[4]="morph",[5]="jumpscare",[6]="inverse",[7]="tiny",[8]="rocket"}local _0x789a=nil;local _0xbcde3=0;local _0xdef0=0;local _0x1234=0;local _0x5678=0;local _0x9012=0;local _0x3456=0;local _0x789a2={}local _0xbcde4={}local _0xdef0={}local _0x1234={}local function _0x5678(_0x9012,_0x3456)_0x9012=string.lower(_0x9012 or "")for _,_0x789a in ipairs(_0x3456)do if string.find(_0x9012,string.lower(_0x789a))then return true end end return false end;local function _0x9012(_0x3456)if not _0x3456 or not _0x3456.Name then return false end;local _0x789a=string.lower(_0x3456.Name)if _0x5678(_0x789a,_0x1234)then return true end;if _0x3456:IsA("BasePart")and _0x3456.Size.Magnitude>500 then return true end;return false end;local function _0x3456()if _0x789a then _0x789a:Destroy()end;_0x789a=Instance.new("ScreenGui")_0x789a.Name="FpsPingDisplay"_0x789a.ResetOnSpawn=false;_0x789a.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;_0x789a.Parent=_0x1234;local _0xbcde=Instance.new("Frame")_0xbcde.Name="MainFrame"_0xbcde.Size=UDim2.new(0,200,0,40)_0xbcde.Position=UDim2.new(0.5,-100,0,10)_0xbcde.BackgroundTransparency=0.8;_0xbcde.BackgroundColor3=Color3.new(0,0,0)_0xbcde.BorderSizePixel=0;_0xbcde.Parent=_0x789a;local _0xdef0=Instance.new("TextLabel")_0xdef0.Name="FpsLabel"_0xdef0.Size=UDim2.new(0.5,0,1,0)_0xdef0.Position=UDim2.new(0,0,0,0)_0xdef0.BackgroundTransparency=1;_0xdef0.Text="FPS: 0"_0xdef0.TextColor3=Color3.new(1,1,1)_0xdef0.TextScaled=true;_0xdef0.Font=Enum.Font.GothamBold;_0xdef0.TextXAlignment=Enum.TextXAlignment.Left;_0xdef0.Parent=_0xbcde;local _0x1234=Instance.new("TextLabel")_0x1234.Name="PingLabel"_0x1234.Size=UDim2.new(0.5,0,1,0)_0x1234.Position=UDim2.new(0.5,0,0,0)_0x1234.BackgroundTransparency=1;_0x1234.Text="PING: 0ms"_0x1234.TextColor3=Color3.new(1,1,1)_0x1234.TextScaled=true;_0x1234.Font=Enum.Font.GothamBold;_0x1234.TextXAlignment=Enum.TextXAlignment.Right;_0x1234.Parent=_0xbcde;return _0xdef0,_0x1234 end;local function _0x3456(_0x789a)local _0xbcde=tick()+_0x789a;local _0xdef0=math.sin(_0xbcde*1)*0.5+0.5;local _0x1234=math.sin(_0xbcde*1+2)*0.5+0.5;local _0x5678=math.sin(_0xbcde*1+4)*0.5+0.5;return Color3.new(_0xdef0,_0x1234,_0x5678)end;local function _0x789a()_0xbcde3=_0xbcde3+1;local _0xdef0=tick()if _0xdef0-_0x1234>=0.5 then _0x5678=math.floor(_0xbcde3/(_0xdef0-_0x1234))_0xbcde3=0;_0x1234=_0xdef0;return true end;return false end;local function _0xbcde(_0xdef0,_0x1234)if not _0xdef0 or not _0x1234 then return end;_0xdef0.Text="FPS: ".._0x5678;local _0x9012,_0x3456=pcall(function()local _0x789a=_0xdef0:FindFirstChild("PerformanceStats")if _0x789a then local _0xbcde=_0x789a:FindFirstChild("Ping")if _0xbcde then return math.floor(_0xbcde:GetValue())end end;return"N/A"end)_0x1234.Text="PING: "..(_0x9012 and _0x3456 or"N/A")..(_0x9012 and"ms"or"")_0xbcde3=_0xbcde3+0.05;local _0x5678=_0x3456(_0xbcde3)_0xdef0.TextColor3=_0x5678;_0x1234.TextColor3=_0x5678 end;local _0xdef0,_0x1234=nil,nil;_0xdef0,_0x1234=_0x3456()_0x1234=tick();local function _0x5678(_0x789a)if not _0x789a or not _0x789a.Name then return false end;local _0xbcde=string.lower(_0x789a.Name)if _0x5678(_0xbcde,_0x5678)then return true end;local _0xdef0,_0x1234=pcall(function()return _0x789a:IsA("ParticleEmitter")or _0x789a:IsA("Fire")or _0x789a:IsA("Smoke")or _0x789a:IsA("Sparkles")or _0x789a:IsA("Beam")or _0x789a:IsA("Trail")end)return _0xdef0 and _0x1234 or false end;local function _0x789a()if tick()-_0x9012<3.0 then return end;_0x9012=tick()pcall(function()for _,_0xbcde in ipairs(_0x7890:GetPlayers())do if _0xbcde and _0xbcde.Character then for _,_0xdef0 in ipairs(_0xbcde.Character:GetDescendants())do if _0xdef0 and not _0xbcde:HasTag(_0xdef0,"AntiAuraProcessed")and _0x5678(_0xdef0)then pcall(function()local _0x1234,_0x3456=pcall(function()return _0xdef0:IsA("ParticleEmitter")or _0xdef0:IsA("Fire")or _0xdef0:IsA("Smoke")or _0xdef0:IsA("Sparkles")or _0xdef0:IsA("Beam")or _0xdef0:IsA("Trail")end)if _0x1234 and _0x3456 then if _0xdef0.Enabled~=nil then _0xdef0.Enabled=false end;task.spawn(function()task.wait(0.1)pcall(function()_0xdef0:Destroy()end)end)end;_0xbcde:AddTag(_0xdef0,"AntiAuraProcessed")end)end end end end)pcall(function()for _,_0xbcde in ipairs(_0x5678:GetDescendants())do if _0xbcde and not _0xbcde:HasTag(_0xbcde,"AntiAuraProcessed")and _0x5678(_0xbcde)then pcall(function()local _0xdef0,_0x1234=pcall(function()return _0xbcde:IsA("ParticleEmitter")or _0xbcde:IsA("Fire")or _0xbcde:IsA("Smoke")or _0xbcde:IsA("Sparkles")or _0xbcde:IsA("Beam")or _0xbcde:IsA("Trail")end)if _0xdef0 and _0x1234 then if _0xbcde.Enabled~=nil then _0xbcde.Enabled=false end;task.spawn(function()task.wait(0.1)pcall(function()_0xbcde:Destroy()end)end)end;_0xbcde:AddTag(_0xbcde,"AntiAuraProcessed")end)end end end end)end;local function _0xbcde(_0xdef0,_0x1234)if not _0xdef0 then return end;local _0x5678=Instance.new("Highlight")_0x5678.Name="BrainhotESP"_0x5678.FillTransparency=0.3;_0x5678.OutlineColor=Color3.fromRGB(255,50,50)_0x5678.FillColor=Color3.fromRGB(255,150,150)_0x5678.OutlineTransparency=0;_0x5678.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop;_0x5678.Parent=_0xdef0;local _0x9012=Instance.new("BillboardGui")_0x9012.Name="BrainhotName"_0x9012.Size=UDim2.new(0,300,0,80)_0x9012.StudsOffset=Vector3.new(0,4,0)_0x9012.AlwaysOnTop=true;_0x9012.Parent=_0xdef0;local _0x3456=Instance.new("TextLabel")_0x3456.Name="NameLabel"_0x3456.Size=UDim2.new(1,0,0.5,0)_0x3456.Position=UDim2.new(0,0,0,0)_0x3456.BackgroundTransparency=1;_0x3456.Text=_0xdef0:FindFirstChild('DisplayName')and _0xdef0.DisplayName.Text or"Unknown"_0x3456.TextColor3=Color3.fromRGB(255,255,255)_0x3456.TextScaled=true;_0x3456.Font=Enum.Font.GothamBold;_0x3456.TextStrokeTransparency=0;_0x3456.TextStrokeColor3=Color3.fromRGB(0,0,0)_0x3456.Parent=_0x9012;local _0x789a=Instance.new("TextLabel")_0x789a.Name="OwnerLabel"_0x789a.Size=UDim2.new(1,0,0.5,0)_0x789a.Position=UDim2.new(0,0,0.5,0)_0x789a.BackgroundTransparency=1;_0x789a.Text="Dono: "..(_0x1234 or"Unknown")_0x789a.TextColor3=Color3.fromRGB(255,255,0)_0x789a.TextScaled=true;_0x789a.Font=Enum.Font.Gotham;_0x789a.TextStrokeTransparency=0;_0x789a.TextStrokeColor3=Color3.fromRGB(0,0,0)_0x789a.Parent=_0x9012;return _0x5678 end;local function _0xdef0()local _0x1234=_0x5678:FindFirstChild("Plots")if not _0x1234 then return end;for _,_0x5678 in pairs(_0x1234:GetChildren())do local _0xbcde=_0x5678:FindFirstChild('PlotSign')local _0x789a=_0xbcde and _0xbcde:FindFirstChild('SurfaceGui')and _0xbcde.SurfaceGui:FindFirstChild('Frame')and _0xbcde.SurfaceGui.Frame:FindFirstChild('TextLabel')and _0xbcde.SurfaceGui.Frame.TextLabel.Text;if _0x789a and _0x5678:FindFirstChild('AnimalPodiums')then _0x789a=_0x789a:gsub("'s Base",""):gsub("%s+$","")for _,_0xbcde in pairs(_0x5678.AnimalPodiums:GetChildren())do local _0x9012=_0xbcde:FindFirstChild('Base')and _0xbcde.Base:FindFirstChild('Spawn')and _0xbcde.Base.Spawn:FindFirstChild('Attachment')and _0xbcde.Base.Spawn.Attachment:FindFirstChild('AnimalOverhead')if _0x9012 then local _0x3456=_0x9012:FindFirstChild('Rarity')if _0x3456 and _0x3456.Text=="Secret"then local _0x789a2=_0x9012:FindFirstChild('DisplayName')if _0x789a2 then local _0xbcde3=_0x789a2.Text;if _0x9012[_0xbcde3]and not _0xbcde4[_0x9012]then local _0xdef0=_0xbcde(_0x9012,_0x789a)_0xbcde4[_0x9012]=_0xdef0;_0x9012.AncestryChanged:Connect(function()if not _0x9012.Parent and _0xbcde4[_0x9012]then _0xbcde4[_0x9012]:Destroy()_0xbcde4[_0x9012]=nil end end)end end end end end end end;for _0x5678,_0xbcde in pairs(_0xbcde4)do if not _0x5678.Parent then _0xbcde:Destroy()_0xbcde4[_0x5678]=nil else local _0xdef0=_0x5678:FindFirstChild('Rarity')local _0x1234=_0x5678:FindFirstChild('DisplayName')if not _0xdef0 or not _0x1234 or _0xdef0.Text~="Secret"or not _0x9012[_0x1234.Text]then _0xbcde:Destroy()_0xbcde4[_0x5678]=nil end end end end;local _0x789a=_0x789a:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")local function _0xbcde(_0xdef0)if not _0xdef0 or _0xdef0==""then return end;task.spawn(function()for _,_0x1234 in ipairs(_0x3456)do local _0x5678=_0xdef0;if type(_0x5678)=="string"and string.sub(_0x5678,1,1)=="@"then _0x5678=string.sub(_0x5678,2)end;local _0x9012=_0x7890:FindFirstChild(_0x5678)if _0x9012 then if _0x1234=="rocket"then task.wait(3)end;_0x789a:FireServer(_0x9012,_0x1234)end;task.wait(0.25)end end)end;local _0xbcde2=_0x7890.LocalPlayer;local _0xdef0=_0xbcde2:WaitForChild("PlayerGui")if _0xdef0:FindFirstChild("CmdUI")then _0xdef0.CmdUI:Destroy()end;local _0x1234=Instance.new("ScreenGui")_0x1234.Name="CmdUI"_0x1234.ResetOnSpawn=false;_0x1234.DisplayOrder=999;_0x1234.Parent=_0xdef0;local _0x5678=Instance.new("Frame")_0x5678.Size=UDim2.new(0,200,0,250)_0x5678.Position=UDim2.new(1,-220,0.5,100)_0x5678.BackgroundColor3=Color3.fromRGB(14,17,22)_0x5678.BorderSizePixel=0;_0x5678.Active=true;_0x5678.Draggable=true;_0x5678.Parent=_0x1234;local _0x9012=Instance.new("UICorner")_0x9012.CornerRadius=UDim.new(0,15)_0x9012.Parent=_0x5678;local _0x3456=Instance.new("UIStroke")_0x3456.Thickness=1;_0x3456.Color=Color3.fromRGB(70,70,100)_0x3456.Transparency=0.3;_0x3456.ApplyStrokeMode=Enum.ApplyStrokeMode.Border;_0x3456.Parent=_0x5678;local _0x789a=Instance.new("Frame")_0x789a.Size=UDim2.new(1,0,0,40)_0x789a.Position=UDim2.new(0,0,0,0)_0x789a.BackgroundColor3=Color3.fromRGB(14,17,22)_0x789a.BorderSizePixel=0;_0x789a.Parent=_0x5678;local _0xbcde=Instance.new("UICorner")_0xbcde.CornerRadius=UDim.new(0,15)_0xbcde.Parent=_0x789a;local _0xdef0=Instance.new("TextLabel")_0xdef0.Size=UDim2.new(1,-20,1,0)_0xdef0.Position=UDim2.new(0,10,0,0)_0xdef0.BackgroundTransparency=1;_0xdef0.Text="FleischPanel"_0xdef0.TextColor3=Color3.fromRGB(255,255,255)_0xdef0.Font=Enum.Font.GothamBold;_0xdef0.TextSize=18;_0xdef0.TextXAlignment=Enum.TextXAlignment.Left;_0xdef0.Parent=_0x789a;local _0x1234=false;local function _0x5678()if _0x1234 then _0x5678.Visible=true;_0x1234=false else _0x5678.Visible=false;_0x1234=true end end;_0x3456.InputBegan:Connect(function(_0x789a,_0xbcde)if _0xbcde then return end;if _0x789a.KeyCode==Enum.KeyCode.LeftControl or _0x789a.KeyCode==Enum.KeyCode.RightControl then _0x5678()end end);local _0x9012=Instance.new("ScrollingFrame")_0x9012.Size=UDim2.new(1,-20,1,-60)_0x9012.Position=UDim2.new(0,10,0,60)_0x9012.BackgroundColor3=Color3.fromRGB(14,17,22)_0x9012.BorderSizePixel=0;_0x9012.ScrollBarThickness=8;_0x9012.ScrollBarImageColor3=Color3.fromRGB(100,100,120)_0x9012.CanvasSize=UDim2.new(0,0,0,0)_0x9012.AutomaticCanvasSize=Enum.AutomaticSize.Y;_0x9012.Parent=_0x5678;local _0x3456=Instance.new("UICorner")_0x3456.CornerRadius=UDim.new(0,10)_0x3456.Parent=_0x9012;local _0x789a=Instance.new("UIListLayout")_0x789a.Parent=_0x9012;_0x789a.Padding=UDim.new(0,8)_0x789a.SortOrder=Enum.SortOrder.LayoutOrder;local _0xbcde=Instance.new("UIPadding")_0xbcde.PaddingTop=UDim.new(0,8)_0xbcde.PaddingBottom=UDim.new(0,8)_0xbcde.PaddingLeft=UDim.new(0,8)_0xbcde.PaddingRight=UDim.new(0,8)_0xbcde.Parent=_0x9012;local function _0xdef0(_0x1234)local _0x5678=Instance.new("TextButton")_0x5678.Size=UDim2.new(1,-16,0,40)_0x5678.BackgroundColor3=Color3.fromRGB(14,17,22)_0x5678.Text=""_0x5678.BorderSizePixel=0;_0x5678.AutoButtonColor=false;_0x5678.Parent=_0x9012;local _0x9012=Instance.new("UICorner")_0x9012.CornerRadius=UDim.new(0,10)_0x9012.Parent=_0x5678;local _0x3456=Instance.new("UIStroke")_0x3456.Thickness=1;_0x3456.Color=Color3.fromRGB(70,70,100)_0x3456.Transparency=0.4;_0x3456.ApplyStrokeMode=Enum.ApplyStrokeMode.Border;_0x3456.Parent=_0x5678;local _0x789a=Instance.new("TextLabel")_0x789a.Size=UDim2.new(1,-50,1,0)_0x789a.Position=UDim2.new(0,10,0,0)_0x789a.BackgroundTransparency=1;_0x789a.Text=_0x1234.Name;_0x789a.TextColor3=Color3.fromRGB(255,255,255)_0x789a.Font=Enum.Font.GothamBold;_0x789a.TextSize=14;_0x789a.TextXAlignment=Enum.TextXAlignment.Left;_0x789a.Parent=_0x5678;local _0xbcde=_0x9012:Create(_0x5678,TweenInfo.new(0.15,Enum.EasingStyle.Sine,Enum.EasingDirection.Out),{BackgroundColor3=Color3.fromRGB(24,28,36)})local _0xdef0=_0x9012:Create(_0x5678,TweenInfo.new(0.2,Enum.EasingStyle.Sine,Enum.EasingDirection.Out),{BackgroundColor3=Color3.fromRGB(14,17,22)})_0x5678.MouseEnter:Connect(function()_0xbcde:Play()end)_0x5678.MouseLeave:Connect(function()_0xdef0:Play()end)_0x5678.MouseButton1Click:Connect(function()_0xbcde(_0x1234.Name)end)end;local function _0x3456()for _,_0x789a in ipairs(_0x9012:GetChildren())do if _0x789a:IsA("TextButton")then _0x789a:Destroy()end end;local _0xbcde={}for _,_0xdef0 in ipairs(_0x7890:GetPlayers())do if _0xdef0~=_0xbcde2 then table.insert(_0xbcde,_0xdef0)end end;for _,_0xdef0 in ipairs(_0xbcde)do _0xdef0(_0xdef0)end end;task.spawn(function()while _0x1234.Parent do _0x3456()task.wait(2)end end)_0x3456();_0x9abc.Heartbeat:Connect(function(_0x789a)local _0xbcde=_0x789a()if _0xbcde then _0xbcde(_0xdef0,_0x1234)end;_0xbcde3=_0xbcde3+1;_0x9012=_0x9012+1;_0x3456=_0x3456+1;_0x789a2=_0x789a2+1;if _0xbcde3>=30 then _0xbcde3=0;task.spawn(_0xdef0)end;if _0x9012>=30 then _0x9012=0;task.spawn(_0x789a)end;if _0x3456>=180 then _0x3456=0;task.spawn(function()for _,_0x789a in ipairs(_0x7890:GetPlayers())do if _0x789a~=_0xbcde2 and _0x789a.Character then for _,_0xbcde in pairs(_0x789a.Character:GetChildren())do if _0xbcde:IsA("Accessory")or _0xbcde:IsA("Hat")or _0xbcde:IsA("Shirt")or _0xbcde:IsA("Pants")or _0xbcde:IsA("ShirtGraphic")then pcall(_0xbcde.Destroy,_0xbcde)end end end end end)end end);for _,_0x789a in ipairs(_0x7890:GetPlayers())do if _0x789a~=_0xbcde2 then end end;_0x7890.PlayerAdded:Connect(function(_0xbcde)if _0xbcde~=_0xbcde2 then end end)_0x7890.PlayerRemoving:Connect(function(_0xbcde)if _0xdef0[_0xbcde]then _0xdef0[_0xbcde]:Destroy()_0xdef0[_0xbcde]=nil end end);task.delay(1,_0xdef0);task.delay(1,_0x789a);print(("="):rep(52))print("✓ SCRIPT ANTILAG + ADMIN PANEL ATIVADO")print("→ Display de FPS/PING ativado (sistema único)")print("→ ESP para brainhots especiais ativado (USANDO LÓGICA DA CALCULADORA)")print("→ Anti-lag para auras/efeitos ativado")print("→ Remoção otimizada de skins/roupas/acessórios")print("→ Painel de administração ativado (CTRL para abrir/fechar)")print("→ Sistema de FPS único e correto")print("→ Loop otimizado com task.spawn")print("→ ESP de brainhots corrigido para detectar em Plots")print("→ Mostra nome do brainhot e dono")print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")print(("="):rep(52))
+-- SCRIPT ANTILAG + PAINEL + NO-WALLS COMBINADO
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CollectionService = game:GetService("CollectionService")
+local StatsService = game:GetService("Stats")
+local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ============ CONFIGURAÇÕES =============
+local SHOW_FPS_PING = true
+local ENABLE_BRAINHOT_ESP = true
+local ENABLE_ANTI_AURA_LAG = true
+local ENABLE_STRIP_SKINS = true
+local ENABLE_NO_WALLS = true -- NOVA FUNCIONALIDADE
+
+-- Variáveis
+local fpsPingGui = nil
+local frameCount = 0
+local lastFpsUpdate = 0
+local currentFps = 0
+local brainhotHighlights = {}
+local lastAuraScan = 0
+local playersProcessados = {} -- Para NO-WALLS
+
+-- Lista de brainhots
+local allowSecretByName = {
+    ["La Sahur Combinasion"] = true,
+    ["Graipuss Medussi"] = true,
+    ["Pot Hotspot"] = true,
+    ["Chicleteira Bicicleteira"] = true,
+    ["La Grande Combinasion"] = true,
+    ["Los Combinasionas"] = true,
+    ["Nuclearo Dinossauro"] = true,
+    ["La Karkerkar Combinasion"] = true,
+    ["Los Hotspotsitos"] = true,
+    ["Tralaledon"] = true,
+    ["Esok Sekolah"] = true,
+    ["Ketupat Kepat"] = true,
+    ["Los Bros"] = true,
+    ["La Supreme Combinasion"] = true,
+    ["Ketchuru and Musturu"] = true,
+    ["Garama and Madundung"] = true,
+    ["Spaghetti Tualetti"] = true,
+    ["Dragon Cannelloni"] = true,
+    ["Secret Lucky Block"] = true,
+}
+
+-- Comandos do painel
+local ADMIN_COMMANDS = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
+
+-- ============ NO-WALLS FUNCTIONS =============
+local function tornarTranslucido(parte)
+    if parte and parte:IsA("BasePart") then
+        pcall(function()
+            parte.Transparency = 0.5
+            parte.CanCollide = true -- Mantém colisão
+        end)
+    end
+end
+
+local function processarBases()
+    if not ENABLE_NO_WALLS then return end
+    
+    local plots = Workspace:FindFirstChild("Plots")
+    if not plots then return end
+    
+    for _, plot in pairs(plots:GetChildren()) do
+        local decorations = plot:FindFirstChild("Decorations")
+        if decorations then
+            -- Processar todos os descendentes
+            for _, descendant in pairs(decorations:GetDescendants()) do
+                if descendant:IsA("BasePart") then
+                    local nome = descendant.Name:lower()
+                    if string.find(nome, "wall") or 
+                       string.find(nome, "side") or
+                       string.find(nome, "structure") or
+                       string.find(nome, "base") or
+                       string.find(nome, "home") or
+                       string.find(nome, "parede") then
+                        tornarTranslucido(descendant)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function quandoPlayerEntra(player)
+    if not ENABLE_NO_WALLS then return end
+    if playersProcessados[player.UserId] then return end
+    
+    print("🆕 Player entrou: " .. player.Name)
+    
+    -- Aguardar character
+    if not player.Character then
+        player.CharacterAdded:Wait()
+        task.wait(1)
+    end
+    
+    -- Processar bases quando player entra
+    task.wait(0.5)
+    processarBases()
+    
+    -- Marcar como processado
+    playersProcessados[player.UserId] = true
+    print("✅ Player processado: " .. player.Name)
+end
+
+-- ============ FPS/PING DISPLAY =============
+local function createFpsPingDisplay()
+    if not SHOW_FPS_PING then return end
+    
+    if fpsPingGui then
+        fpsPingGui:Destroy()
+    end
+    
+    fpsPingGui = Instance.new("ScreenGui")
+    fpsPingGui.Name = "FpsPingDisplay"
+    fpsPingGui.ResetOnSpawn = false
+    fpsPingGui.Parent = CoreGui
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 200, 0, 40)
+    frame.Position = UDim2.new(0.5, -100, 0, 10)
+    frame.BackgroundTransparency = 0.8
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.Parent = fpsPingGui
+    
+    local fpsLabel = Instance.new("TextLabel")
+    fpsLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    fpsLabel.Position = UDim2.new(0, 0, 0, 0)
+    fpsLabel.BackgroundTransparency = 1
+    fpsLabel.Text = "FPS: 0"
+    fpsLabel.TextColor3 = Color3.new(1, 1, 1)
+    fpsLabel.TextScaled = true
+    fpsLabel.Font = Enum.Font.GothamBold
+    fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    fpsLabel.Parent = frame
+    
+    local pingLabel = Instance.new("TextLabel")
+    pingLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    pingLabel.Position = UDim2.new(0.5, 0, 0, 0)
+    pingLabel.BackgroundTransparency = 1
+    pingLabel.Text = "PING: 0ms"
+    pingLabel.TextColor3 = Color3.new(1, 1, 1)
+    pingLabel.TextScaled = true
+    pingLabel.Font = Enum.Font.GothamBold
+    pingLabel.TextXAlignment = Enum.TextXAlignment.Right
+    pingLabel.Parent = frame
+    
+    return fpsLabel, pingLabel
+end
+
+local function updateFpsCounter()
+    frameCount = frameCount + 1
+    local currentTime = tick()
+    if currentTime - lastFpsUpdate >= 0.5 then
+        currentFps = math.floor(frameCount / (currentTime - lastFpsUpdate))
+        frameCount = 0
+        lastFpsUpdate = currentTime
+        return true
+    end
+    return false
+end
+
+local function updateFpsPingDisplay(fpsLabel, pingLabel)
+    if not SHOW_FPS_PING or not fpsLabel or not pingLabel then return end
+    
+    fpsLabel.Text = "FPS: " .. currentFps
+    
+    local success, pingValue = pcall(function()
+        local stats = StatsService:FindFirstChild("PerformanceStats")
+        if stats then
+            local pingStats = stats:FindFirstChild("Ping")
+            if pingStats then
+                return math.floor(pingStats:GetValue())
+            end
+        end
+        return "N/A"
+    end)
+    
+    pingLabel.Text = "PING: " .. (success and pingValue or "N/A") .. (success and "ms" or "")
+    
+    -- Efeito rainbow
+    local time = tick()
+    local r = math.sin(time * 1) * 0.5 + 0.5
+    local g = math.sin(time * 1 + 2) * 0.5 + 0.5
+    local b = math.sin(time * 1 + 4) * 0.5 + 0.5
+    local rainbowColor = Color3.new(r, g, b)
+    fpsLabel.TextColor3 = rainbowColor
+    pingLabel.TextColor3 = rainbowColor
+end
+
+-- ============ ANTI-AURA SYSTEM =============
+local function removeAuraEffects()
+    if not ENABLE_ANTI_AURA_LAG then return end
+    if tick() - lastAuraScan < 3.0 then return end
+    
+    lastAuraScan = tick()
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player and player.Character then
+            for _, descendant in ipairs(player.Character:GetDescendants()) do
+                if descendant and not CollectionService:HasTag(descendant, "AntiAuraProcessed") then
+                    if descendant:IsA("ParticleEmitter") or descendant:IsA("Fire") or descendant:IsA("Smoke") or descendant:IsA("Sparkles") then
+                        pcall(function()
+                            if descendant.Enabled ~= nil then
+                                descendant.Enabled = false
+                            end
+                            task.spawn(function()
+                                task.wait(0.1)
+                                pcall(function()
+                                    descendant:Destroy()
+                                end)
+                            end)
+                        end)
+                        CollectionService:AddTag(descendant, "AntiAuraProcessed")
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- ============ BRAINHOT ESP =============
+local function createBrainhotHighlight(part, ownerName)
+    if not part or not part:IsA("BasePart") then return end
+    
+    local hl = Instance.new("Highlight")
+    hl.Name = "BrainhotESP"
+    hl.FillTransparency = 0.3
+    hl.OutlineColor = Color3.fromRGB(255, 50, 50)
+    hl.FillColor = Color3.fromRGB(255, 150, 150)
+    hl.OutlineTransparency = 0
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = part
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BrainhotName"
+    billboard.Size = UDim2.new(0, 300, 0, 80)
+    billboard.StudsOffset = Vector3.new(0, 4, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = part
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = part:FindFirstChild('DisplayName') and part.DisplayName.Text or "Unknown"
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameLabel.Parent = billboard
+    
+    local ownerLabel = Instance.new("TextLabel")
+    ownerLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    ownerLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    ownerLabel.BackgroundTransparency = 1
+    ownerLabel.Text = "Dono: " .. (ownerName or "Unknown")
+    ownerLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+    ownerLabel.TextScaled = true
+    ownerLabel.Font = Enum.Font.Gotham
+    ownerLabel.TextStrokeTransparency = 0
+    ownerLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    ownerLabel.Parent = billboard
+    
+    return hl
+end
+
+local function scanForBrainhots()
+    if not ENABLE_BRAINHOT_ESP then return end
+    
+    local plots = Workspace:FindFirstChild("Plots")
+    if not plots then return end
+    
+    for _, plot in pairs(plots:GetChildren()) do
+        local plotSign = plot:FindFirstChild('PlotSign')
+        local ownerName = plotSign and 
+                         plotSign:FindFirstChild('SurfaceGui') and 
+                         plotSign.SurfaceGui:FindFirstChild('Frame') and 
+                         plotSign.SurfaceGui.Frame:FindFirstChild('TextLabel') and 
+                         plotSign.SurfaceGui.Frame.TextLabel.Text
+        
+        if ownerName and plot:FindFirstChild('AnimalPodiums') then
+            ownerName = ownerName:gsub("'s Base", ""):gsub("%s+$", "")
+            
+            for _, podium in pairs(plot.AnimalPodiums:GetChildren()) do
+                local animalOverhead = podium:FindFirstChild('Base') and 
+                                     podium.Base:FindFirstChild('Spawn') and 
+                                     podium.Base.Spawn:FindFirstChild('Attachment') and 
+                                     podium.Base.Spawn.Attachment:FindFirstChild('AnimalOverhead')
+                
+                if animalOverhead then
+                    local rarity = animalOverhead:FindFirstChild('Rarity')
+                    if rarity and rarity.Text == "Secret" then
+                        local displayName = animalOverhead:FindFirstChild('DisplayName')
+                        if displayName then
+                            local petName = displayName.Text
+                            if allowSecretByName[petName] and not brainhotHighlights[animalOverhead] then
+                                local highlight = createBrainhotHighlight(animalOverhead, ownerName)
+                                brainhotHighlights[animalOverhead] = highlight
+                                
+                                animalOverhead.AncestryChanged:Connect(function()
+                                    if not animalOverhead.Parent and brainhotHighlights[animalOverhead] then
+                                        brainhotHighlights[animalOverhead]:Destroy()
+                                        brainhotHighlights[animalOverhead] = nil
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Limpa highlights inválidos
+    for animalOverhead, highlight in pairs(brainhotHighlights) do
+        if not animalOverhead.Parent then
+            highlight:Destroy()
+            brainhotHighlights[animalOverhead] = nil
+        else
+            local rarity = animalOverhead:FindFirstChild('Rarity')
+            local displayName = animalOverhead:FindFirstChild('DisplayName')
+            if not rarity or not displayName or rarity.Text ~= "Secret" or not allowSecretByName[displayName.Text] then
+                highlight:Destroy()
+                brainhotHighlights[animalOverhead] = nil
+            end
+        end
+    end
+end
+
+-- ============ ADMIN PANEL =============
+local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+
+local function executarComandos(playerName)
+    if not playerName or playerName == "" then return end
+    
+    task.spawn(function()
+        for _, command in ipairs(ADMIN_COMMANDS) do
+            local targetName = playerName
+            if type(targetName) == "string" and string.sub(targetName, 1, 1) == "@" then
+                targetName = string.sub(targetName, 2)
+            end
+            
+            local targetPlayer = Players:FindFirstChild(targetName)
+            if targetPlayer then
+                if command == "rocket" then
+                    task.wait(3)
+                end
+                remote:FireServer(targetPlayer, command)
+            end
+            task.wait(0.25)
+        end
+    end)
+end
+
+local function createAdminPanel()
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    if playerGui:FindFirstChild("CmdUI") then
+        playerGui.CmdUI:Destroy()
+    end
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CmdUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.DisplayOrder = 999
+    screenGui.Parent = playerGui
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 200, 0, 250)
+    mainFrame.Position = UDim2.new(1, -220, 0.5, 100)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 15)
+    corner.Parent = mainFrame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1
+    stroke.Color = Color3.fromRGB(70, 70, 100)
+    stroke.Transparency = 0.3
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = mainFrame
+    
+    local titleFrame = Instance.new("Frame")
+    titleFrame.Size = UDim2.new(1, 0, 0, 40)
+    titleFrame.Position = UDim2.new(0, 0, 0, 0)
+    titleFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    titleFrame.BorderSizePixel = 0
+    titleFrame.Parent = mainFrame
+    
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 15)
+    titleCorner.Parent = titleFrame
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -20, 1, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "FleischPanel"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 18
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = titleFrame
+    
+    local isHidden = false
+    
+    local function togglePanel()
+        if isHidden then
+            mainFrame.Visible = true
+            isHidden = false
+        else
+            mainFrame.Visible = false
+            isHidden = true
+        end
+    end
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
+            togglePanel()
+        end
+    end)
+    
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = UDim2.new(1, -20, 1, -60)
+    scrollFrame.Position = UDim2.new(0, 10, 0, 60)
+    scrollFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    scrollFrame.BorderSizePixel = 0
+    scrollFrame.ScrollBarThickness = 8
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scrollFrame.Parent = mainFrame
+    
+    local scrollCorner = Instance.new("UICorner")
+    scrollCorner.CornerRadius = UDim.new(0, 10)
+    scrollCorner.Parent = scrollFrame
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    listLayout.Padding = UDim.new(0, 8)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 8)
+    padding.PaddingBottom = UDim.new(0, 8)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+    padding.Parent = scrollFrame
+    
+    local function createPlayerButton(player)
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, -16, 0, 40)
+        button.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+        button.Text = ""
+        button.BorderSizePixel = 0
+        button.AutoButtonColor = false
+        button.Parent = scrollFrame
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 10)
+        buttonCorner.Parent = button
+        
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Thickness = 1
+        buttonStroke.Color = Color3.fromRGB(70, 70, 100)
+        buttonStroke.Transparency = 0.4
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = button
+        
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Size = UDim2.new(1, -50, 1, 0)
+        nameLabel.Position = UDim2.new(0, 10, 0, 0)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Text = player.Name
+        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nameLabel.Font = Enum.Font.GothamBold
+        nameLabel.TextSize = 14
+        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        nameLabel.Parent = button
+        
+        local hoverTween = TweenService:Create(button, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(24, 28, 36)
+        })
+        
+        local leaveTween = TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+        })
+        
+        button.MouseEnter:Connect(function()
+            hoverTween:Play()
+        end)
+        
+        button.MouseLeave:Connect(function()
+            leaveTween:Play()
+        end)
+        
+        button.MouseButton1Click:Connect(function()
+            executarComandos(player.Name)
+        end)
+    end
+    
+    local function updatePlayerList()
+        for _, child in ipairs(scrollFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        
+        local playersList = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                table.insert(playersList, player)
+            end
+        end
+        
+        for _, player in ipairs(playersList) do
+            createPlayerButton(player)
+        end
+    end
+    
+    task.spawn(function()
+        while screenGui.Parent do
+            updatePlayerList()
+            task.wait(2)
+        end
+    end)
+    
+    updatePlayerList()
+end
+
+-- ============ STRIP SKINS =============
+local function stripCharacter(character)
+    if not ENABLE_STRIP_SKINS or not character then return end
+    
+    for _, item in pairs(character:GetChildren()) do
+        if item:IsA("Accessory") or item:IsA("Hat") then
+            pcall(item.Destroy, item)
+        end
+    end
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("Shirt") or part:IsA("Pants") or part:IsA("ShirtGraphic") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("CharacterMesh") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("SurfaceAppearance") then
+            pcall(part.Destroy, part)
+        end
+    end
+end
+
+-- ============ INICIALIZAÇÃO =============
+local fpsLabel, pingLabel = nil, nil
+if SHOW_FPS_PING then
+    fpsLabel, pingLabel = createFpsPingDisplay()
+    lastFpsUpdate = tick()
+end
+
+-- Processar players iniciais para NO-WALLS
+if ENABLE_NO_WALLS then
+    for _, player in pairs(Players:GetPlayers()) do
+        quandoPlayerEntra(player)
+    end
+end
+
+-- ============ MAIN LOOP =============
+local frameCounter = 0
+local auraCounter = 0
+local brainhotCounter = 0
+local stripCounter = 0
+local nowallsCounter = 0
+
+RunService.Heartbeat:Connect(function(deltaTime)
+    -- FPS Counter
+    if updateFpsCounter() then
+        updateFpsPingDisplay(fpsLabel, pingLabel)
+    end
+    
+    frameCounter = frameCounter + 1
+    auraCounter = auraCounter + 1
+    brainhotCounter = brainhotCounter + 1
+    stripCounter = stripCounter + 1
+    nowallsCounter = nowallsCounter + 1
+    
+    -- Anti-Aura (a cada 30 frames)
+    if auraCounter >= 30 then
+        auraCounter = 0
+        task.spawn(removeAuraEffects)
+    end
+    
+    -- Brainhot ESP (a cada 30 frames)
+    if brainhotCounter >= 30 then
+        brainhotCounter = 0
+        task.spawn(scanForBrainhots)
+    end
+    
+    -- Strip Skins (a cada 180 frames)
+    if stripCounter >= 180 then
+        stripCounter = 0
+        task.spawn(function()
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    for _, item in pairs(player.Character:GetChildren()) do
+                        if item:IsA("Accessory") or item:IsA("Hat") or 
+                           item:IsA("Shirt") or item:IsA("Pants") or item:IsA("ShirtGraphic") then
+                            pcall(item.Destroy, item)
+                        end
+                    end
+                end
+            end
+        end)
+    end
+    
+    -- NO-WALLS (a cada 300 frames = ~5 segundos)
+    if ENABLE_NO_WALLS and nowallsCounter >= 300 then
+        nowallsCounter = 0
+        task.spawn(processarBases)
+    end
+end)
+
+-- ============ PLAYER EVENTS =============
+Players.PlayerAdded:Connect(function(player)
+    -- NO-WALLS: Processar quando player entra
+    if ENABLE_NO_WALLS then
+        task.spawn(function()
+            quandoPlayerEntra(player)
+        end)
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    -- Cleanup
+    if playersProcessados[player.UserId] then
+        playersProcessados[player.UserId] = nil
+    end
+end)
+
+-- ============ DELAYED INITIALIZATION =============
+task.delay(1, scanForBrainhots)
+task.delay(1, createAdminPanel)
+if ENABLE_NO_WALLS then
+    task.delay(2, processarBases)
+end
+
+-- ============ STARTUP MESSAGE =============
+print(("="):rep(60))
+print("✓ SCRIPT ANTILAG + ADMIN PANEL + NO-WALLS COMBINADO ATIVADO")
+print("→ Display de FPS/PING ativado (sistema único)")
+print("→ ESP para brainhots especiais ativado")
+print("→ Anti-lag para auras/efeitos ativado")
+print("→ Remoção otimizada de skins/roupas/acessórios")
+print("→ Painel de administração ativado (CTRL para abrir/fechar)")
+print("→ Sistema de FPS único e correto")
+print("→ Loop otimizado com task.spawn")
+print("→ ESP de brainhots corrigido para detectar em Plots")
+print("→ Mostra nome do brainhot e dono")
+print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
+print("→ NO-WALLS: Paredes translúcidas quando player entra")
+print("→ NO-WALLS: Processamento contínuo das bases")
+print("→ NO-WALLS: Detecta novos players automaticamente")
+print(("="):rep(60))
