@@ -604,11 +604,31 @@ local function processarBases()
 end
 
 -- ============ ADMIN PANEL =============
-local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+local remote = nil
 local ADMIN_COMMANDS = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
+
+-- Tentar encontrar o remote com proteção de erro
+local function findAdminRemote()
+    local success, result = pcall(function()
+        return ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+    end)
+    
+    if success and result then
+        remote = result
+        print("✅ Remote do painel admin encontrado!")
+        return true
+    else
+        print("❌ Remote do painel admin não encontrado - painel desabilitado")
+        return false
+    end
+end
 
 local function executarComandos(playerName)
     if not playerName or playerName == "" then return end
+    if not remote then
+        print("❌ Remote do painel admin não disponível!")
+        return
+    end
     
     task.spawn(function()
         for _, command in ipairs(ADMIN_COMMANDS) do
@@ -622,7 +642,9 @@ local function executarComandos(playerName)
                 if command == "rocket" then
                     task.wait(3)
                 end
-                remote:FireServer(targetPlayer, command)
+                pcall(function()
+                    remote:FireServer(targetPlayer, command)
+                end)
             end
             task.wait(0.25)
         end
@@ -630,6 +652,11 @@ local function executarComandos(playerName)
 end
 
 local function createAdminPanel()
+    if not remote then
+        print("❌ Painel admin não criado - remote não disponível")
+        return
+    end
+    
     local playerGui = LocalPlayer:WaitForChild("PlayerGui")
     
     if playerGui:FindFirstChild("CmdUI") then
@@ -1002,7 +1029,7 @@ if CONFIG.ENABLE_AUTO_EQUIP then
     print("→ Pressione F para LIGAR/DESLIGAR")
     print("→ Pressione G para abrir UI de seleção")
 end
-print("→ Painel de administração ativado")
+print("→ Painel de administração (tentando conectar...)")
 print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
 print("=" .. string.rep("=", 50))
 
@@ -1017,5 +1044,9 @@ if CONFIG.ENABLE_NO_WALLS then
     task.delay(3, processarBases)
 end
 
--- Criar painel admin
-task.delay(1, createAdminPanel)
+-- Tentar encontrar remote e criar painel admin
+task.delay(1, function()
+    if findAdminRemote() then
+        createAdminPanel()
+    end
+end)
