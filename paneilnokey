@@ -966,7 +966,7 @@ if ENABLE_AUTO_EQUIP then
     print("→ Pressione F para LIGAR/DESLIGAR")
     print("→ Pressione G para abrir UI de seleção")
 end
-print("→ Pressione H para abrir Painel Admin")
+print("→ Painel Admin abre automaticamente (ou pressione H para toggle)")
 print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
 print("=" .. string.rep("=", 50))
 
@@ -981,10 +981,12 @@ if ENABLE_NO_WALLS then
     task.delay(3, processarBases)
 end
 
--- Tentar encontrar remote do painel admin
+-- Tentar encontrar remote do painel admin e abrir automaticamente
 task.delay(1, function()
     if findAdminRemote() then
         print("✅ Painel admin conectado e disponível!")
+        print("🚀 Abrindo painel admin automaticamente...")
+        createAdminPanel()
     else
         print("❌ Painel admin não disponível - remote não encontrado")
     end
