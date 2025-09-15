@@ -603,6 +603,195 @@ local function processarBases()
     end
 end
 
+-- ============ ADMIN PANEL =============
+local remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+local ADMIN_COMMANDS = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
+
+local function executarComandos(playerName)
+    if not playerName or playerName == "" then return end
+    
+    task.spawn(function()
+        for _, command in ipairs(ADMIN_COMMANDS) do
+            local targetName = playerName
+            if type(targetName) == "string" and string.sub(targetName, 1, 1) == "@" then
+                targetName = string.sub(targetName, 2)
+            end
+            
+            local targetPlayer = Players:FindFirstChild(targetName)
+            if targetPlayer and targetPlayer ~= LocalPlayer then
+                if command == "rocket" then
+                    task.wait(3)
+                end
+                remote:FireServer(targetPlayer, command)
+            end
+            task.wait(0.25)
+        end
+    end)
+end
+
+local function createAdminPanel()
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    if playerGui:FindFirstChild("CmdUI") then
+        playerGui.CmdUI:Destroy()
+    end
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CmdUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.DisplayOrder = 999
+    screenGui.Parent = playerGui
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 200, 0, 250)
+    mainFrame.Position = UDim2.new(1, -220, 0.5, 100)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 15)
+    corner.Parent = mainFrame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1
+    stroke.Color = Color3.fromRGB(70, 70, 100)
+    stroke.Transparency = 0.3
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = mainFrame
+    
+    local titleFrame = Instance.new("Frame")
+    titleFrame.Size = UDim2.new(1, 0, 0, 40)
+    titleFrame.Position = UDim2.new(0, 0, 0, 0)
+    titleFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    titleFrame.BorderSizePixel = 0
+    titleFrame.Parent = mainFrame
+    
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 15)
+    titleCorner.Parent = titleFrame
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -20, 1, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "FleischPanel"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 18
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = titleFrame
+    
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = UDim2.new(1, -20, 1, -60)
+    scrollFrame.Position = UDim2.new(0, 10, 0, 60)
+    scrollFrame.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+    scrollFrame.BorderSizePixel = 0
+    scrollFrame.ScrollBarThickness = 8
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scrollFrame.Parent = mainFrame
+    
+    local scrollCorner = Instance.new("UICorner")
+    scrollCorner.CornerRadius = UDim.new(0, 10)
+    scrollCorner.Parent = scrollFrame
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    listLayout.Padding = UDim.new(0, 8)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 8)
+    padding.PaddingBottom = UDim.new(0, 8)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+    padding.Parent = scrollFrame
+    
+    local function createPlayerButton(player)
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, -16, 0, 40)
+        button.BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+        button.Text = ""
+        button.BorderSizePixel = 0
+        button.AutoButtonColor = false
+        button.Parent = scrollFrame
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 10)
+        buttonCorner.Parent = button
+        
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Thickness = 1
+        buttonStroke.Color = Color3.fromRGB(70, 70, 100)
+        buttonStroke.Transparency = 0.4
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = button
+        
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Size = UDim2.new(1, -50, 1, 0)
+        nameLabel.Position = UDim2.new(0, 10, 0, 0)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Text = player.Name
+        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nameLabel.Font = Enum.Font.GothamBold
+        nameLabel.TextSize = 14
+        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        nameLabel.Parent = button
+        
+        local hoverTween = TweenService:Create(button, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(24, 28, 36)
+        })
+        
+        local leaveTween = TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(14, 17, 22)
+        })
+        
+        button.MouseEnter:Connect(function()
+            hoverTween:Play()
+        end)
+        
+        button.MouseLeave:Connect(function()
+            leaveTween:Play()
+        end)
+        
+        button.MouseButton1Click:Connect(function()
+            executarComandos(player.Name)
+        end)
+    end
+    
+    local function updatePlayerList()
+        for _, child in ipairs(scrollFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        
+        local playersList = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                table.insert(playersList, player)
+            end
+        end
+        
+        for _, player in ipairs(playersList) do
+            createPlayerButton(player)
+        end
+    end
+    
+    task.spawn(function()
+        while screenGui.Parent do
+            updatePlayerList()
+            task.wait(2)
+        end
+    end)
+    
+    updatePlayerList()
+end
+
 -- ============ STRIP SKINS =============
 local function stripCharacter(character)
     if not CONFIG.ENABLE_STRIP_SKINS or not character then return end
@@ -813,6 +1002,8 @@ if CONFIG.ENABLE_AUTO_EQUIP then
     print("→ Pressione F para LIGAR/DESLIGAR")
     print("→ Pressione G para abrir UI de seleção")
 end
+print("→ Painel de administração ativado")
+print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
 print("=" .. string.rep("=", 50))
 
 -- Escaneamentos iniciais
@@ -825,3 +1016,6 @@ end
 if CONFIG.ENABLE_NO_WALLS then
     task.delay(3, processarBases)
 end
+
+-- Criar painel admin
+task.delay(1, createAdminPanel)
