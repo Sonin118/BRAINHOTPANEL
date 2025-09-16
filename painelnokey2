@@ -1,0 +1,993 @@
+-- ======================================================================
+-- FLEISHUB - SCRIPT COMBINADO FINAL
+-- ======================================================================
+-- Funcionalidades: Anti-lag, Painel admin, No-walls, ESP, FPS/PING, Auto Equip
+-- ======================================================================
+
+-- ============ CONFIGURAÇÕES =============
+local SHOW_FPS_PING = true
+local ENABLE_BRAINHOT_ESP = true
+local ENABLE_ANTI_AURA_LAG = true
+local ENABLE_STRIP_SKINS = true
+local ENABLE_NO_WALLS = true
+local ENABLE_AUTO_EQUIP = true
+
+-- Auto Equip Config
+local AUTO_EQUIP_KEY = Enum.KeyCode.F
+local AUTO_EQUIP_UI_KEY = Enum.KeyCode.G
+local selectedItem = "Dark Matter Slap" -- "Bat" ou "Dark Matter Slap"
+
+-- Admin Panel Config
+local ADMIN_PANEL_KEY = Enum.KeyCode.H
+
+-- No-Walls Config
+local WALL_KEYWORDS = {"wall","parede","barrier","invisible","barreira","colisão","block","border","gate","bar","kill","killbrick","side"}
+local WALL_SCAN_INTERVAL = 5.0
+local WALL_TAG = "NoWallProcessed"
+local WALL_TRANSPARENCY = 0.5
+
+-- Anti-Aura Config
+local AURA_KEYWORDS = { "aura", "effect", "efeito", "glow", "brilho", "sparkle", "particle", "fogo", "fire", "fumaça", "smoke", "luz", "light", "raio", "beam", "magic", "mágica", "halo", "circle", "ring", "shockwave", "onda" }
+local AURA_TAG = "AntiAuraProcessed"
+
+-- Brainhot ESP Config
+local allowSecretByName = {
+    ["La Sahur Combinasion"] = true,
+    ["Graipuss Medussi"] = true,
+    ["Pot Hotspot"] = true,
+    ["Chicleteira Bicicleteira"] = true,
+    ["La Grande Combinasion"] = true,
+    ["Los Combinasionas"] = true,
+    ["Nuclearo Dinossauro"] = true,
+    ["La Karkerkar Combinasion"] = true,
+    ["Los Hotspotsitos"] = true,
+    ["Tralaledon"] = true,
+    ["Esok Sekolah"] = true,
+    ["Ketupat Kepat"] = true,
+    ["Los Bros"] = true,
+    ["La Supreme Combinasion"] = true,
+    ["Ketchuru and Musturu"] = true,
+    ["Garama and Madundung"] = true,
+    ["Spaghetti Tualetti"] = true,
+    ["Dragon Cannelloni"] = true,
+    ["Secret Lucky Block"] = true,
+}
+
+-- ============ SERVICES =============
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CollectionService = game:GetService("CollectionService")
+local StatsService = game:GetService("Stats")
+local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ============ AUTO EQUIP VARIABLES =============
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local isEquipped = false
+local currentTool = nil
+local isRunning = false
+local lastEquippedTool = nil
+local wasRunningBeforePause = false
+local uiOpen = false
+
+-- ============ FPS/PING DISPLAY =============
+local fpsPingGui = nil
+local rainbowOffset = 0
+local frameCount = 0
+local lastFpsUpdate = 0
+local currentFps = 0
+
+-- ============ UTILS =============
+local function strContainsAny(s, list)
+    s = string.lower(s or "")
+    for _,w in ipairs(list) do
+        if string.find(s, string.lower(w)) then
+            return true
+        end
+    end
+    return false
+end
+
+local function isProtectedStructure(inst)
+    local name = string.lower(inst.Name or "")
+    local protected = {"floor", "chão", "solo", "ground", "base", "home", "structure"}
+    return strContainsAny(name, protected)
+end
+
+-- ============ FPS/PING SYSTEM =============
+local function createFpsPingDisplay()
+    if not SHOW_FPS_PING then return end
+    if fpsPingGui then fpsPingGui:Destroy() end
+    
+    fpsPingGui = Instance.new("ScreenGui")
+    fpsPingGui.Name = "FpsPingDisplay"
+    fpsPingGui.ResetOnSpawn = false
+    fpsPingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    fpsPingGui.Parent = CoreGui
+
+    local frame = Instance.new("Frame")
+    frame.Name = "MainFrame"
+    frame.Size = UDim2.new(0, 200, 0, 40)
+    frame.Position = UDim2.new(0.5, -100, 0, 10)
+    frame.BackgroundTransparency = 0.8
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.Parent = fpsPingGui
+
+    local fpsLabel = Instance.new("TextLabel")
+    fpsLabel.Name = "FpsLabel"
+    fpsLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    fpsLabel.Position = UDim2.new(0, 0, 0, 0)
+    fpsLabel.BackgroundTransparency = 1
+    fpsLabel.Text = "FPS: 0"
+    fpsLabel.TextColor3 = Color3.new(1, 1, 1)
+    fpsLabel.TextScaled = true
+    fpsLabel.Font = Enum.Font.GothamBold
+    fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    fpsLabel.Parent = frame
+
+    local pingLabel = Instance.new("TextLabel")
+    pingLabel.Name = "PingLabel"
+    pingLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    pingLabel.Position = UDim2.new(0.5, 0, 0, 0)
+    pingLabel.BackgroundTransparency = 1
+    pingLabel.Text = "PING: 0ms"
+    pingLabel.TextColor3 = Color3.new(1, 1, 1)
+    pingLabel.TextScaled = true
+    pingLabel.Font = Enum.Font.GothamBold
+    pingLabel.TextXAlignment = Enum.TextXAlignment.Right
+    pingLabel.Parent = frame
+
+    return fpsLabel, pingLabel
+end
+
+local function getRainbowColor(offset)
+    local time = tick() + offset
+    local r = math.sin(time * 1) * 0.5 + 0.5
+    local g = math.sin(time * 1 + 2) * 0.5 + 0.5
+    local b = math.sin(time * 1 + 4) * 0.5 + 0.5
+    return Color3.new(r, g, b)
+end
+
+local function updateFpsCounter()
+    frameCount = frameCount + 1
+    local currentTime = tick()
+    if currentTime - lastFpsUpdate >= 0.5 then
+        currentFps = math.floor(frameCount / (currentTime - lastFpsUpdate))
+        frameCount = 0
+        lastFpsUpdate = currentTime
+        return true
+    end
+    return false
+end
+
+local function updateFpsPingDisplay(fpsLabel, pingLabel)
+    if not SHOW_FPS_PING or not fpsLabel or not pingLabel then return end
+    
+    fpsLabel.Text = "FPS: " .. currentFps
+    
+    local success, pingValue = pcall(function()
+        local stats = StatsService:FindFirstChild("PerformanceStats")
+        if stats then
+            local pingStats = stats:FindFirstChild("Ping")
+            if pingStats then
+                return math.floor(pingStats:GetValue())
+            end
+        end
+        return "N/A"
+    end)
+    
+    pingLabel.Text = "PING: " .. (success and pingValue or "N/A") .. (success and "ms" or "")
+    
+    rainbowOffset = rainbowOffset + 0.05
+    local rainbowColor = getRainbowColor(rainbowOffset)
+    fpsLabel.TextColor3 = rainbowColor
+    pingLabel.TextColor3 = rainbowColor
+end
+
+-- ============ AUTO EQUIP SYSTEM =============
+local function findBat()
+    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if tool and tool.Name then
+            local name = tool.Name:lower()
+            if name:find("bat") or name:find("morcego") or name:find("taco") or name:find("bastão") then
+                return tool
+            end
+        end
+    end
+    return nil
+end
+
+local function findSlap()
+    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if tool and tool.Name then
+            local name = tool.Name:lower()
+            if name:find("dark matter slap") or name:find("dark matter") or name:find("slap") or name:find("tapa") then
+                return tool
+            end
+        end
+    end
+    return nil
+end
+
+local function findSelectedTool()
+    if selectedItem == "Bat" then
+        return findBat()
+    else
+        return findSlap()
+    end
+end
+
+local function isBat(tool)
+    if not tool or not tool.Name then return false end
+    local name = tool.Name:lower()
+    return name:find("bat") or name:find("morcego") or name:find("taco") or name:find("bastão")
+end
+
+local function isSlap(tool)
+    if not tool or not tool.Name then return false end
+    local name = tool.Name:lower()
+    return name:find("dark matter slap") or name:find("dark matter") or name:find("slap") or name:find("tapa")
+end
+
+local function isSelectedTool(tool)
+    if selectedItem == "Bat" then
+        return isBat(tool)
+    else
+        return isSlap(tool)
+    end
+end
+
+local function equip()
+    if not isEquipped and currentTool then
+        humanoid:EquipTool(currentTool)
+        isEquipped = true
+        lastEquippedTool = currentTool
+        print(selectedItem .. " equipado!")
+    end
+end
+
+local function unequip()
+    if isEquipped and currentTool then
+        currentTool.Parent = LocalPlayer.Backpack
+        isEquipped = false
+        lastEquippedTool = nil
+        print(selectedItem .. " desequipado!")
+    end
+end
+
+local function toggle()
+    if isEquipped then
+        unequip()
+    else
+        equip()
+    end
+end
+
+local function updateAutoEquipUI()
+    local existingUI = CoreGui:FindFirstChild("AutoEquipUI")
+    if existingUI then
+        local statusLabel = existingUI:FindFirstChild("MainFrame"):FindFirstChild("StatusLabel")
+        if statusLabel then
+            statusLabel.Text = "Status: " .. (isRunning and "LIGADO" or "DESLIGADO")
+            statusLabel.TextColor3 = isRunning and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+        end
+    end
+end
+
+local function pauseAutoEquip()
+    isRunning = not isRunning
+    if isRunning then
+        wasRunningBeforePause = true
+        print("Auto Equip retomado!")
+    else
+        wasRunningBeforePause = false
+        print("Auto Equip pausado!")
+    end
+    updateAutoEquipUI()
+end
+
+local function createAutoEquipUI()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AutoEquipUI"
+    screenGui.Parent = CoreGui
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 300, 0, 200)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+    mainFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = mainFrame
+    
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    title.BorderSizePixel = 0
+    title.Text = "Auto Equip Script"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.Parent = mainFrame
+    
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 10)
+    titleCorner.Parent = title
+    
+    local itemLabel = Instance.new("TextLabel")
+    itemLabel.Name = "ItemLabel"
+    itemLabel.Size = UDim2.new(1, -20, 0, 30)
+    itemLabel.Position = UDim2.new(0, 10, 0, 50)
+    itemLabel.BackgroundTransparency = 1
+    itemLabel.Text = "Item Selecionado: " .. selectedItem
+    itemLabel.TextColor3 = Color3.new(1, 1, 1)
+    itemLabel.TextScaled = true
+    itemLabel.Font = Enum.Font.Gotham
+    itemLabel.Parent = mainFrame
+    
+    local batButton = Instance.new("TextButton")
+    batButton.Name = "BatButton"
+    batButton.Size = UDim2.new(0.45, 0, 0, 40)
+    batButton.Position = UDim2.new(0.025, 0, 0, 90)
+    batButton.BackgroundColor3 = selectedItem == "Bat" and Color3.new(0, 0.5, 0) or Color3.new(0.3, 0.3, 0.3)
+    batButton.BorderSizePixel = 0
+    batButton.Text = "Bat"
+    batButton.TextColor3 = Color3.new(1, 1, 1)
+    batButton.TextScaled = true
+    batButton.Font = Enum.Font.GothamBold
+    batButton.Parent = mainFrame
+    
+    local batCorner = Instance.new("UICorner")
+    batCorner.CornerRadius = UDim.new(0, 5)
+    batCorner.Parent = batButton
+    
+    local slapButton = Instance.new("TextButton")
+    slapButton.Name = "SlapButton"
+    slapButton.Size = UDim2.new(0.45, 0, 0, 40)
+    slapButton.Position = UDim2.new(0.525, 0, 0, 90)
+    slapButton.BackgroundColor3 = selectedItem == "Dark Matter Slap" and Color3.new(0, 0.5, 0) or Color3.new(0.3, 0.3, 0.3)
+    slapButton.BorderSizePixel = 0
+    slapButton.Text = "Dark Matter Slap"
+    slapButton.TextColor3 = Color3.new(1, 1, 1)
+    slapButton.TextScaled = true
+    slapButton.Font = Enum.Font.GothamBold
+    slapButton.Parent = mainFrame
+    
+    local slapCorner = Instance.new("UICorner")
+    slapCorner.CornerRadius = UDim.new(0, 5)
+    slapCorner.Parent = slapButton
+    
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Size = UDim2.new(1, -20, 0, 30)
+    statusLabel.Position = UDim2.new(0, 10, 0, 140)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = "Status: " .. (isRunning and "LIGADO" or "DESLIGADO")
+    statusLabel.TextColor3 = isRunning and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+    statusLabel.TextScaled = true
+    statusLabel.Font = Enum.Font.GothamBold
+    statusLabel.Parent = mainFrame
+    
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -35, 0, 5)
+    closeButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.new(1, 1, 1)
+    closeButton.TextScaled = true
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Parent = mainFrame
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 5)
+    closeCorner.Parent = closeButton
+    
+    batButton.MouseButton1Click:Connect(function()
+        selectedItem = "Bat"
+        batButton.BackgroundColor3 = Color3.new(0, 0.5, 0)
+        slapButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+        itemLabel.Text = "Item Selecionado: " .. selectedItem
+        currentTool = nil
+        print("Item alterado para: Bat")
+    end)
+    
+    slapButton.MouseButton1Click:Connect(function()
+        selectedItem = "Dark Matter Slap"
+        slapButton.BackgroundColor3 = Color3.new(0, 0.5, 0)
+        batButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+        itemLabel.Text = "Item Selecionado: " .. selectedItem
+        currentTool = nil
+        print("Item alterado para: Dark Matter Slap")
+    end)
+    
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+        uiOpen = false
+    end)
+    
+    uiOpen = true
+    return screenGui
+end
+
+local function checkOtherTool()
+    for _, tool in pairs(character:GetChildren()) do
+        if tool:IsA("Tool") and tool ~= lastEquippedTool then
+            if not isSelectedTool(tool) then
+                if isRunning then
+                    wasRunningBeforePause = true
+                end
+                isRunning = false
+                print("Outro item equipado! Auto Equip pausado.")
+                print("Equipou: " .. tool.Name)
+                updateAutoEquipUI()
+            else
+                if wasRunningBeforePause then
+                    isRunning = true
+                    currentTool = tool
+                    print(selectedItem .. " selecionado novamente! Auto Equip retomado automaticamente.")
+                else
+                    isRunning = false
+                    currentTool = tool
+                    print(selectedItem .. " selecionado! Auto Equip permanece desligado.")
+                end
+                updateAutoEquipUI()
+            end
+            lastEquippedTool = tool
+            return true
+        end
+    end
+    return false
+end
+
+-- ============ ANTI-AURA SYSTEM =============
+local lastAuraScan = 0
+local AURA_SCAN_INTERVAL = 3.0
+
+local function isAuraEffect(instance)
+    local name = string.lower(instance.Name or "")
+    if strContainsAny(name, AURA_KEYWORDS) then
+        return true
+    end
+    if instance:IsA("ParticleEmitter") or instance:IsA("Fire") or instance:IsA("Smoke") or instance:IsA("Sparkles") or instance:IsA("Beam") or instance:IsA("Trail") then
+        return true
+    end
+    return false
+end
+
+local function removeAuraEffects()
+    if not ENABLE_ANTI_AURA_LAG then return end
+    if tick() - lastAuraScan < AURA_SCAN_INTERVAL then return end
+    lastAuraScan = tick()
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            for _, descendant in ipairs(player.Character:GetDescendants()) do
+                if not CollectionService:HasTag(descendant, AURA_TAG) and isAuraEffect(descendant) then
+                    pcall(function()
+                        if descendant:IsA("ParticleEmitter") or descendant:IsA("Fire") or descendant:IsA("Smoke") or descendant:IsA("Sparkles") or descendant:IsA("Beam") or descendant:IsA("Trail") then
+                            descendant.Enabled = false
+                            task.spawn(function()
+                                task.wait(0.1)
+                                pcall(function() descendant:Destroy() end)
+                            end)
+                        end
+                        CollectionService:AddTag(descendant, AURA_TAG)
+                    end)
+                end
+            end
+        end
+    end
+    
+    for _, descendant in ipairs(Workspace:GetDescendants()) do
+        if not CollectionService:HasTag(descendant, AURA_TAG) and isAuraEffect(descendant) then
+            pcall(function()
+                if descendant:IsA("ParticleEmitter") or descendant:IsA("Fire") or descendant:IsA("Smoke") or descendant:IsA("Sparkles") or descendant:IsA("Beam") or descendant:IsA("Trail") then
+                    descendant.Enabled = false
+                    task.spawn(function()
+                        task.wait(0.1)
+                        pcall(function() descendant:Destroy() end)
+                    end)
+                end
+                CollectionService:AddTag(descendant, AURA_TAG)
+            end)
+        end
+    end
+end
+
+-- ============ BRAINHOT ESP =============
+local brainhotHighlights = {}
+
+local function createBrainhotHighlight(part)
+    if not part or not part:IsA("BasePart") then return end
+    
+    local hl = Instance.new("Highlight")
+    hl.Name = "BrainhotESP"
+    hl.FillTransparency = 0.3
+    hl.OutlineColor = Color3.fromRGB(255, 50, 50)
+    hl.FillColor = Color3.fromRGB(255, 150, 150)
+    hl.OutlineTransparency = 0
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = part
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BrainhotName"
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = part
+    
+    local label = Instance.new("TextLabel")
+    label.Name = "NameLabel"
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = part.Name
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = billboard
+    
+    return hl
+end
+
+local function scanForBrainhots()
+    if not ENABLE_BRAINHOT_ESP then return end
+    
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and allowSecretByName[obj.Name] and not brainhotHighlights[obj] then
+            local highlight = createBrainhotHighlight(obj)
+            brainhotHighlights[obj] = highlight
+            
+            obj.AncestryChanged:Connect(function()
+                if not obj.Parent and brainhotHighlights[obj] then
+                    brainhotHighlights[obj]:Destroy()
+                    brainhotHighlights[obj] = nil
+                end
+            end)
+        end
+    end
+    
+    for obj, highlight in pairs(brainhotHighlights) do
+        if not obj.Parent or not allowSecretByName[obj.Name] then
+            highlight:Destroy()
+            brainhotHighlights[obj] = nil
+        end
+    end
+end
+
+-- ============ NO-WALLS SYSTEM =============
+local lastWallScan = 0
+
+local function processarBases()
+    if not ENABLE_NO_WALLS then return end
+    if tick() - lastWallScan < WALL_SCAN_INTERVAL then return end
+    lastWallScan = tick()
+    
+    local plots = Workspace:FindFirstChild("Plots")
+    if not plots then return end
+    
+    for _, plot in pairs(plots:GetChildren()) do
+        if plot:IsA("Model") then
+            local decorations = plot:FindFirstChild("Decorations")
+            if decorations then
+                for _, decoration in pairs(decorations:GetChildren()) do
+                    if decoration:IsA("Model") then
+                        for _, part in pairs(decoration:GetDescendants()) do
+                            if part:IsA("BasePart") and not CollectionService:HasTag(part, WALL_TAG) then
+                                local name = string.lower(part.Name or "")
+                                if strContainsAny(name, WALL_KEYWORDS) and not isProtectedStructure(part) then
+                                    pcall(function()
+                                        part.Transparency = WALL_TRANSPARENCY
+                                        part.CanCollide = true
+                                        part.CastShadow = false
+                                        part.Material = Enum.Material.Plastic
+                                        part.Reflectance = 0
+                                        CollectionService:AddTag(part, WALL_TAG)
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- ============ STRIP SKINS =============
+local function stripCharacter(character)
+    if not ENABLE_STRIP_SKINS or not character then return end
+    
+    for _, item in pairs(character:GetChildren()) do
+        if item:IsA("Accessory") or item:IsA("Hat") then
+            pcall(item.Destroy, item)
+        end
+    end
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("Shirt") or part:IsA("Pants") or part:IsA("ShirtGraphic") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("CharacterMesh") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("SpecialMesh") then
+            pcall(function()
+                part.TextureId = ""
+                if part.MeshType == Enum.MeshType.FileMesh then
+                    part.MeshId = ""
+                end
+            end)
+        elseif part:IsA("MeshPart") then
+            pcall(function()
+                part.TextureID = ""
+                part.Color = Color3.fromRGB(163,162,165)
+                part.Material = Enum.Material.Plastic
+            end)
+        elseif part:IsA("SurfaceAppearance") then
+            pcall(part.Destroy, part)
+        elseif part:IsA("BasePart") then
+            pcall(function()
+                part.Color = Color3.fromRGB(163,162,165)
+                part.Material = Enum.Material.Plastic
+                part.Transparency = 0
+                part.Reflectance = 0
+            end)
+        elseif part:IsA("ParticleEmitter") or part:IsA("Fire") or part:IsA("Smoke") or part:IsA("Sparkles") or part:IsA("Light") or part:IsA("PointLight") or part:IsA("SpotLight") or part:IsA("SurfaceLight") or part:IsA("Trail") or part:IsA("Beam") then
+            pcall(part.Destroy, part)
+        end
+    end
+end
+
+-- ============ ADMIN PANEL =============
+local adminRemote = nil
+local ADMIN_COMMANDS = {"ragdoll","balloon","jail","morph","jumpscare","inverse","tiny","rocket"}
+
+-- Tentar encontrar o remote do painel admin
+local function findAdminRemote()
+    local success, result = pcall(function()
+        return ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/AdminPanelService/ExecuteCommand")
+    end)
+    
+    if success and result then
+        adminRemote = result
+        print("✅ Remote do painel admin encontrado!")
+        return true
+    else
+        print("❌ Remote do painel admin não encontrado - painel desabilitado")
+        return false
+    end
+end
+
+local function executarComandos(playerName)
+    if not playerName or playerName == "" then return end
+    if not adminRemote then
+        print("❌ Remote do painel admin não disponível!")
+        return
+    end
+    
+    task.spawn(function()
+        for i, cmd in ipairs(ADMIN_COMMANDS) do
+            local alvo = Players:FindFirstChild(playerName)
+            if alvo then
+                if cmd == "rocket" then
+                    task.wait(3) -- espera 3s só antes do rocket
+                end
+                pcall(function()
+                    adminRemote:FireServer(alvo, cmd)
+                end)
+            end
+            task.wait(0.5)
+        end
+    end)
+end
+
+local function createAdminPanel()
+    if not adminRemote then
+        print("❌ Painel admin não criado - remote não disponível")
+        return
+    end
+    
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    if playerGui:FindFirstChild("CmdUI") then
+        playerGui.CmdUI:Destroy()
+    end
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CmdUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 220, 0, 310)
+    frame.Position = UDim2.new(1, -240, 1, -360)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = frame
+    
+    local scrolling = Instance.new("ScrollingFrame")
+    scrolling.Size = UDim2.new(1, -10, 1, -10)
+    scrolling.Position = UDim2.new(0, 5, 0, 5)
+    scrolling.BackgroundTransparency = 1
+    scrolling.ScrollBarThickness = 6
+    scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scrolling.Parent = frame
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrolling
+    listLayout.Padding = UDim.new(0, 6)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    local function criarBotao(playerObj)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -6, 0, 32)
+        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        btn.Text = (playerObj.DisplayName ~= "" and playerObj.DisplayName ~= playerObj.Name)
+            and playerObj.DisplayName
+            or playerObj.Name
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 14
+        btn.Parent = scrolling
+        
+        local cornerBtn = Instance.new("UICorner")
+        cornerBtn.CornerRadius = UDim.new(0, 8)
+        cornerBtn.Parent = btn
+        
+        btn.MouseEnter:Connect(function()
+            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end)
+        btn.MouseLeave:Connect(function()
+            btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        end)
+        
+        btn.MouseButton1Click:Connect(function()
+            executarComandos(playerObj.Name)
+        end)
+    end
+    
+    local function atualizarLista()
+        for _, child in ipairs(scrolling:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                criarBotao(p)
+            end
+        end
+    end
+    
+    task.spawn(function()
+        while screenGui.Parent do
+            atualizarLista()
+            task.wait(2)
+        end
+    end)
+    
+    atualizarLista()
+end
+
+-- ============ INPUT HANDLERS =============
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == AUTO_EQUIP_KEY then
+        pauseAutoEquip()
+    elseif input.KeyCode == AUTO_EQUIP_UI_KEY then
+        if uiOpen then
+            local existingUI = CoreGui:FindFirstChild("AutoEquipUI")
+            if existingUI then
+                existingUI:Destroy()
+                uiOpen = false
+            end
+        else
+            createAutoEquipUI()
+        end
+    elseif input.KeyCode == ADMIN_PANEL_KEY then
+        local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+        local existingAdminPanel = playerGui:FindFirstChild("CmdUI")
+        if existingAdminPanel then
+            existingAdminPanel:Destroy()
+        else
+            createAdminPanel()
+        end
+    end
+end)
+
+-- ============ CHARACTER EVENTS =============
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    isEquipped = false
+    currentTool = nil
+    isRunning = false
+    lastEquippedTool = nil
+    wasRunningBeforePause = false
+    print("Personagem respawnou! Pressione F para ligar o Auto Equip")
+end)
+
+-- ============ INITIALIZATION =============
+local fpsLabel, pingLabel = nil, nil
+if SHOW_FPS_PING then
+    fpsLabel, pingLabel = createFpsPingDisplay()
+    lastFpsUpdate = tick()
+end
+
+-- Setup inicial de jogadores
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then
+        if p.Character then
+            stripCharacter(p.Character)
+        end
+        p.CharacterAdded:Connect(function(character)
+            task.wait(0.5)
+            stripCharacter(character)
+        end)
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        if player.Character then
+            stripCharacter(player.Character)
+        end
+        player.CharacterAdded:Connect(function(character)
+            task.wait(0.5)
+            stripCharacter(character)
+        end)
+    end
+end)
+
+-- ============ MAIN LOOP =============
+local brainhotScanCounter = 0
+local auraScanCounter = 0
+local wallScanCounter = 0
+local autoEquipCounter = 0
+
+RunService.Heartbeat:Connect(function(deltaTime)
+    -- FPS/PING Update
+    local shouldUpdateDisplay = updateFpsCounter()
+    if shouldUpdateDisplay and SHOW_FPS_PING then
+        updateFpsPingDisplay(fpsLabel, pingLabel)
+    end
+    
+    -- Counters
+    brainhotScanCounter = brainhotScanCounter + 1
+    auraScanCounter = auraScanCounter + 1
+    wallScanCounter = wallScanCounter + 1
+    autoEquipCounter = autoEquipCounter + 1
+    
+    -- Brainhot ESP (1 segundo)
+    if ENABLE_BRAINHOT_ESP and brainhotScanCounter >= 60 then
+        brainhotScanCounter = 0
+        task.spawn(scanForBrainhots)
+    end
+    
+    -- Anti-Aura (0.5 segundo)
+    if ENABLE_ANTI_AURA_LAG and auraScanCounter >= 30 then
+        auraScanCounter = 0
+        task.spawn(removeAuraEffects)
+    end
+    
+    -- No-Walls (2 segundos)
+    if ENABLE_NO_WALLS and wallScanCounter >= 120 then
+        wallScanCounter = 0
+        task.spawn(processarBases)
+    end
+    
+    -- Auto Equip (0.01 segundo)
+    if ENABLE_AUTO_EQUIP and autoEquipCounter >= 1 then
+        autoEquipCounter = 0
+        
+        -- Verificar se equipou outro item
+        checkOtherTool()
+        
+        -- Verificar se pegou o item selecionado do inventário quando script estava pausado
+        if not isRunning and not currentTool then
+            currentTool = findSelectedTool()
+            if currentTool then
+                if wasRunningBeforePause then
+                    isRunning = true
+                    print(selectedItem .. " encontrado no inventário! Auto Equip retomado automaticamente.")
+                    updateAutoEquipUI()
+                else
+                    isRunning = false
+                    print(selectedItem .. " encontrado no inventário! Auto Equip permanece desligado.")
+                    updateAutoEquipUI()
+                end
+            end
+        end
+        
+        if isRunning then
+            -- Buscar item selecionado se não tiver
+            if not currentTool then
+                currentTool = findSelectedTool()
+                if currentTool then
+                    print(selectedItem .. " encontrado!")
+                end
+            end
+            
+            -- Fazer toggle se tiver o item selecionado
+            if currentTool then
+                toggle()
+                task.wait(0.01)
+            end
+        end
+    end
+end)
+
+-- ============ STARTUP MESSAGES =============
+print("=" .. string.rep("=", 50))
+print("✓ FLEISHUB - SCRIPT COMBINADO FINAL ATIVADO")
+print("=" .. string.rep("=", 50))
+if SHOW_FPS_PING then
+    print("→ Display de FPS/PING ativado")
+end
+if ENABLE_BRAINHOT_ESP then
+    print("→ ESP para brainhots especiais ativado")
+end
+if ENABLE_ANTI_AURA_LAG then
+    print("→ Anti-lag para auras/efeitos ativado")
+end
+if ENABLE_STRIP_SKINS then
+    print("→ Remoção otimizada de skins/roupas/acessórios")
+end
+if ENABLE_NO_WALLS then
+    print("→ No-walls ativado")
+end
+if ENABLE_AUTO_EQUIP then
+    print("→ Auto Equip ativado")
+    print("→ Pressione F para LIGAR/DESLIGAR")
+    print("→ Pressione G para abrir UI de seleção")
+end
+print("→ Painel Admin abre automaticamente (ou pressione H para toggle)")
+print("→ Comandos: ragdoll, balloon, jail, morph, jumpscare, inverse, tiny, rocket")
+print("=" .. string.rep("=", 50))
+
+-- Escaneamentos iniciais
+if ENABLE_BRAINHOT_ESP then
+    task.delay(2, scanForBrainhots)
+end
+if ENABLE_ANTI_AURA_LAG then
+    task.delay(1, removeAuraEffects)
+end
+if ENABLE_NO_WALLS then
+    task.delay(3, processarBases)
+end
+
+-- Tentar encontrar remote do painel admin e abrir automaticamente
+task.delay(1, function()
+    if findAdminRemote() then
+        print("✅ Painel admin conectado e disponível!")
+        print("🚀 Abrindo painel admin automaticamente...")
+        createAdminPanel()
+    else
+        print("❌ Painel admin não disponível - remote não encontrado")
+    end
+end)
